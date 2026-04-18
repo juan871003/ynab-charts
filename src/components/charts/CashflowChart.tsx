@@ -5,13 +5,9 @@ import {
   filterTransactions,
   type DateRange,
 } from "@/lib/aggregate";
+import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
-
-const money = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { useAppStore } from "@/store/appStore";
 
 export function CashflowChart({
   transactions,
@@ -20,6 +16,12 @@ export function CashflowChart({
   transactions: NormalizedTransaction[];
   dateRange: DateRange | null;
 }) {
+  const displayCurrency = useAppStore((s) => s.displayCurrency);
+  const money = useMemo(
+    () => getCurrencyFormatter(displayCurrency, "chart"),
+    [displayCurrency]
+  );
+
   const option = useMemo(() => {
     const txs = filterTransactions(transactions, dateRange);
     const pts = aggregateMonthlyCashflow(txs);
@@ -75,7 +77,7 @@ export function CashflowChart({
         },
       ],
     };
-  }, [transactions, dateRange]);
+  }, [transactions, dateRange, money]);
 
   if (transactions.length === 0) return null;
 

@@ -5,14 +5,9 @@ import {
   filterTransactions,
   type DateRange,
 } from "@/lib/aggregate";
+import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
-
-const money = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
 
 export function TreemapChart({
   transactions,
@@ -22,6 +17,11 @@ export function TreemapChart({
   dateRange: DateRange | null;
 }) {
   const setSelection = useAppStore((s) => s.setSelection);
+  const displayCurrency = useAppStore((s) => s.displayCurrency);
+  const money = useMemo(
+    () => getCurrencyFormatter(displayCurrency, "chart"),
+    [displayCurrency]
+  );
 
   const { option, dataRoot } = useMemo(() => {
     const txs = filterTransactions(transactions, dateRange);
@@ -50,7 +50,7 @@ export function TreemapChart({
       ],
     };
     return { option: opt, dataRoot: root };
-  }, [transactions, dateRange]);
+  }, [transactions, dateRange, money]);
 
   if (transactions.length === 0 || !dataRoot.children?.length) return null;
 

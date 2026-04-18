@@ -11,8 +11,21 @@ import type {
   PlanRow,
 } from "@/lib/types";
 import type { DateRange } from "@/lib/aggregate";
+import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/money";
+import {
+  clearPersisted,
+  savePersisted,
+  type PersistedPayload,
+} from "@/lib/persistedData";
 
 export type { CategorySelection };
+
+export type SetFromFilesOptions = {
+  /** Defaults to now. Use when hydrating from localStorage. */
+  loadedAt?: string;
+  /** Set false when restoring from disk so we do not rewrite storage. Default true. */
+  persist?: boolean;
+};
 
 interface AppState {
   registerCsv: string | null;
@@ -21,11 +34,20 @@ interface AppState {
   transactions: NormalizedTransaction[];
   planRows: PlanRow[];
   loadError: string | null;
+  /** ISO 8601 — last successful manual parse (or restored session time). */
+  lastLoadedAt: string | null;
   dateRange: DateRange | null;
   selection: CategorySelection | null;
-  setFromFiles: (registerText: string, planText: string) => void;
+  /** ISO 4217 code for display formatting only. */
+  displayCurrency: string;
+  setFromFiles: (
+    registerText: string,
+    planText: string,
+    options?: SetFromFilesOptions
+  ) => void;
   setDateRange: (range: DateRange | null) => void;
   setSelection: (s: CategorySelection | null) => void;
+  setDisplayCurrency: (code: string) => void;
   reset: () => void;
 }
 
@@ -48,46 +70,65 @@ export const useAppStore = create<AppState>((set) => ({
   transactions: [],
   planRows: [],
   loadError: null,
+  lastLoadedAt: null,
   dateRange: null,
   selection: null,
+  displayCurrency: DEFAULT_DISPLAY_CURRENCY,
 
-  setFromFiles: (registerText, planText) => {
-    try {
-      const dates = extractRegisterDateStrings(registerText);
-      const fmt = inferDateFormatFromSamples(dates);
-      const transactions = parseRegisterCsv(registerText, fmt);
-      const planRows = parsePlanCsv(planText);
-      const dateRange = computeDefaultRange(transactions);
-      set({
-        registerCsv: registerText,
-        planCsv: planText,
-        dateFormat: fmt,
-        transactions,
-        planRows,
-        loadError: null,
-        dateRange,
-        selection: null,
-      });
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : "Failed to parse CSV";
-      set({
-        loadError: msg,
-        registerCsv: null,
-        planCsv: null,
-        dateFormat: null,
-        transactions: [],
-        planRows: [],
-        dateRange: null,
-        selection: null,
-      });
-    }
+  setFromFiles: (registerText, planText, options) => {
+    const persist = options?.persist !== false;
+    const loadedAt = options?.loadedAt ?? new Date().toISOString();
+    set((state) => {
+      try {
+        const dates = extractRegisterDateStrings(registerText);
+        const fmt = inferDateFormatFromSamples(dates);
+        const transactions = parseRegisterCsv(registerText, fmt);
+        const planRows = parsePlanCsv(planText);
+        const dateRange = computeDefaultRange(transactions);
+        if (persist) {
+          const payload: PersistedPayload = {
+            v: 1,
+            registerCsv: registerText,
+            planCsv: planText,
+            lastLoadedAt: loadedAt,
+          };
+          try {
+            savePersisted(payload);
+          } catch (e) {
+            const msg =
+              e instanceof Error
+                ? e.message
+                : "Could not save to browser storage (file too large?)";
+            return { ...state, loadError: msg };
+          }
+        }
+        return {
+          ...state,
+          registerCsv: registerText,
+          planCsv: planText,
+          dateFormat: fmt,
+          transactions,
+          planRows,
+          loadError: null,
+          lastLoadedAt: loadedAt,
+          dateRange,
+          selection: null,
+        };
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Failed to parse CSV";
+        return { ...state, loadError: msg };
+      }
+    });
   },
 
   setDateRange: (range) => set({ dateRange: range }),
 
   setSelection: (s) => set({ selection: s }),
 
-  reset: () =>
+  setDisplayCurrency: (code) => set({ displayCurrency: code }),
+
+  reset: () => {
+    clearPersisted();
     set({
       registerCsv: null,
       planCsv: null,
@@ -95,7 +136,9 @@ export const useAppStore = create<AppState>((set) => ({
       transactions: [],
       planRows: [],
       loadError: null,
+      lastLoadedAt: null,
       dateRange: null,
       selection: null,
-    }),
+    });
+  },
 }));

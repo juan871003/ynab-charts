@@ -1,15 +1,17 @@
 import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import { aggregatePlanActivityByGroup } from "@/lib/aggregate";
+import { getCurrencyFormatter } from "@/lib/money";
 import type { PlanRow } from "@/lib/types";
-
-const money = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { useAppStore } from "@/store/appStore";
 
 export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
+  const displayCurrency = useAppStore((s) => s.displayCurrency);
+  const money = useMemo(
+    () => getCurrencyFormatter(displayCurrency, "chart"),
+    [displayCurrency]
+  );
+
   const option = useMemo(() => {
     const pts = aggregatePlanActivityByGroup(planRows);
     const labels = pts.map((p) => p.label);
@@ -74,7 +76,7 @@ export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
       },
       series,
     };
-  }, [planRows]);
+  }, [planRows, money]);
 
   if (planRows.length === 0) return null;
 

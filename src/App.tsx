@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { FileInputs } from "@/components/FileInputs";
+import { CurrencySelect } from "@/components/CurrencySelect";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
 import { CashflowChart } from "@/components/charts/CashflowChart";
 import { TreemapChart } from "@/components/charts/TreemapChart";
@@ -8,9 +9,19 @@ import { SankeyChart } from "@/components/charts/SankeyChart";
 import { CalendarHeatmapChart } from "@/components/charts/CalendarHeatmapChart";
 import { TransactionsTable } from "@/components/TransactionsTable";
 import { getVisibleTransactions } from "@/lib/filterTx";
+import { loadPersisted } from "@/lib/persistedData";
 import { useAppStore } from "@/store/appStore";
 
 export default function App() {
+  useEffect(() => {
+    const saved = loadPersisted();
+    if (!saved) return;
+    useAppStore.getState().setFromFiles(saved.registerCsv, saved.planCsv, {
+      loadedAt: saved.lastLoadedAt,
+      persist: false,
+    });
+  }, []);
+
   const transactions = useAppStore((s) => s.transactions);
   const planRows = useAppStore((s) => s.planRows);
   const dateRange = useAppStore((s) => s.dateRange);
@@ -46,6 +57,18 @@ export default function App() {
       </header>
 
       <FileInputs />
+
+      <div
+        style={{
+          marginTop: "1rem",
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "1rem",
+          alignItems: "center",
+        }}
+      >
+        <CurrencySelect />
+      </div>
 
       {hasData ? (
         <>

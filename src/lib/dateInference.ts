@@ -1,5 +1,5 @@
 import { enUS } from "date-fns/locale";
-import { format, isValid, parse } from "date-fns";
+import { isValid, parse } from "date-fns";
 
 /** date-fns format strings tried against Register `Date` column samples. */
 export const DATE_FORMAT_CANDIDATES = [
@@ -63,10 +63,6 @@ export function parseRegisterDate(
 ): Date | null {
   const d = parse(raw.trim(), formatStr, new Date(0));
   return isValid(d) ? d : null;
-}
-
-export function formatMonthKey(d: Date): string {
-  return format(d, "yyyy-MM");
 }
 
 /** Plan file uses labels like `Jan 2024`. */

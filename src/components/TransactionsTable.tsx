@@ -7,17 +7,19 @@ import {
 } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { useMemo } from "react";
+import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
-
-const money = new Intl.NumberFormat(undefined, {
-  style: "currency",
-  currency: "USD",
-  minimumFractionDigits: 2,
-});
+import { useAppStore } from "@/store/appStore";
 
 const columnHelper = createColumnHelper<NormalizedTransaction>();
 
 export function TransactionsTable({ rows }: { rows: NormalizedTransaction[] }) {
+  const displayCurrency = useAppStore((s) => s.displayCurrency);
+  const money = useMemo(
+    () => getCurrencyFormatter(displayCurrency, "table"),
+    [displayCurrency]
+  );
+
   const columns = useMemo(
     () => [
       columnHelper.accessor((r) => r.date, {
@@ -41,7 +43,7 @@ export function TransactionsTable({ rows }: { rows: NormalizedTransaction[] }) {
       }),
       columnHelper.accessor("memo", { header: "Memo" }),
     ],
-    []
+    [money]
   );
 
   const table = useReactTable({

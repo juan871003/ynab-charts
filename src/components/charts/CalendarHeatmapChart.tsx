@@ -6,7 +6,9 @@ import {
   filterTransactions,
   type DateRange,
 } from "@/lib/aggregate";
+import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
+import { useAppStore } from "@/store/appStore";
 
 export function CalendarHeatmapChart({
   transactions,
@@ -15,6 +17,12 @@ export function CalendarHeatmapChart({
   transactions: NormalizedTransaction[];
   dateRange: DateRange | null;
 }) {
+  const displayCurrency = useAppStore((s) => s.displayCurrency);
+  const money = useMemo(
+    () => getCurrencyFormatter(displayCurrency, "table"),
+    [displayCurrency]
+  );
+
   const option = useMemo(() => {
     const txs = filterTransactions(transactions, dateRange);
     const daily = aggregateDailyOutflow(txs);
@@ -44,7 +52,7 @@ export function CalendarHeatmapChart({
       tooltip: {
         formatter: (p: { value: [string, number] }) => {
           const [day, val] = p.value;
-          return `${day}<br/>Outflow: $${val.toFixed(2)}`;
+          return `${day}<br/>Outflow: ${money.format(val)}`;
         },
       },
       visualMap: {
@@ -74,7 +82,7 @@ export function CalendarHeatmapChart({
         },
       ],
     };
-  }, [transactions, dateRange]);
+  }, [transactions, dateRange, money]);
 
   if (transactions.length === 0) return null;
 
