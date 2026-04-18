@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FileInputs } from "@/components/FileInputs";
 import { CurrencySelect } from "@/components/CurrencySelect";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
@@ -29,9 +29,14 @@ export default function App() {
   const dateFormat = useAppStore((s) => s.dateFormat);
   const setSelection = useAppStore((s) => s.setSelection);
 
+  const [showTransactionsTable, setShowTransactionsTable] = useState(false);
+
   const visible = useMemo(
-    () => getVisibleTransactions(transactions, dateRange, selection),
-    [transactions, dateRange, selection]
+    () =>
+      showTransactionsTable
+        ? getVisibleTransactions(transactions, dateRange, selection)
+        : [],
+    [transactions, dateRange, selection, showTransactionsTable]
   );
 
   const hasData = transactions.length > 0;
@@ -127,7 +132,52 @@ export default function App() {
             transactions={transactions}
             dateRange={dateRange}
           />
-          <TransactionsTable rows={visible} />
+
+          <section style={{ marginTop: "2rem" }}>
+            {showTransactionsTable ? (
+              <>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.75rem",
+                    marginBottom: "0.75rem",
+                  }}
+                >
+                  <button
+                    type="button"
+                    onClick={() => setShowTransactionsTable(false)}
+                    style={{
+                      padding: "0.35rem 0.75rem",
+                      background: "#2a3544",
+                      border: "1px solid #3d4d60",
+                      borderRadius: 6,
+                      color: "#e8eaed",
+                      fontSize: "0.9rem",
+                    }}
+                  >
+                    Hide transactions
+                  </button>
+                </div>
+                <TransactionsTable rows={visible} />
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowTransactionsTable(true)}
+                style={{
+                  padding: "0.5rem 0.9rem",
+                  background: "#2a3544",
+                  border: "1px solid #3d4d60",
+                  borderRadius: 6,
+                  color: "#e8eaed",
+                  fontSize: "0.9rem",
+                }}
+              >
+                Show transactions table
+              </button>
+            )}
+          </section>
         </>
       ) : null}
     </main>
