@@ -5,6 +5,7 @@ import { aggregateWeekdayOutflow } from "@/lib/galleryAggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 function DayOfWeekChartImpl({
   transactions,
@@ -32,28 +33,28 @@ function DayOfWeekChartImpl({
       legend: {
         data: ["Mean outflow", "Txn count"],
         bottom: 0,
-        textStyle: { color: "#b8c0cc" },
+        textStyle: { color: ui.title },
       },
       grid: { left: 48, right: 48, top: 28, bottom: 56 },
       xAxis: {
         type: "category",
         data: labels,
-        axisLabel: { color: "#9aa5b1" },
+        axisLabel: { color: ui.axisLabel },
       },
       yAxis: [
         {
           type: "value",
           name: "Outflow",
           axisLabel: {
-            color: "#9aa5b1",
+            color: ui.axisLabel,
             formatter: (v: number) => money.format(v),
           },
-          splitLine: { lineStyle: { color: "#2a3544" } },
+          splitLine: { lineStyle: { color: ui.splitLine } },
         },
         {
           type: "value",
           name: "Count",
-          axisLabel: { color: "#9aa5b1" },
+          axisLabel: { color: ui.axisLabel },
           splitLine: { show: false },
         },
       ],
@@ -62,14 +63,14 @@ function DayOfWeekChartImpl({
           name: "Mean outflow",
           type: "bar",
           data: pts.map((p) => p.meanOutflow),
-          itemStyle: { color: "#73c0de" },
+          itemStyle: { color: "#9eb4f0" },
         },
         {
           name: "Txn count",
           type: "line",
           yAxisIndex: 1,
           data: pts.map((p) => p.transactionCount),
-          itemStyle: { color: "#fac858" },
+          itemStyle: { color: "#f2c14e" },
           xAxisIndex: 0,
         },
       ],

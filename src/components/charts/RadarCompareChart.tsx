@@ -10,6 +10,7 @@ import {
   radarGroupOutflowIndexed,
 } from "@/lib/galleryAggregate";
 import type { NormalizedTransaction } from "@/lib/types";
+import { ui } from "@/lib/visualTheme";
 
 /**
  * Compares **selected date range** vs **trailing 12 calendar months** of the register
@@ -41,16 +42,16 @@ function RadarCompareChartImpl({
       legend: {
         data: ["Baseline (100)", "Current (indexed)"],
         bottom: 0,
-        textStyle: { color: "#b8c0cc" },
+        textStyle: { color: ui.title },
       },
       radar: {
         indicator: groups.map((name) => ({
           name,
           max: roundedMax,
         })),
-        splitLine: { lineStyle: { color: "#2a3544" } },
+        splitLine: { lineStyle: { color: ui.splitLine } },
         splitArea: { show: false },
-        axisName: { color: "#9aa5b1", fontSize: 10 },
+        axisName: { color: ui.axisLabel, fontSize: 10 },
       },
       series: [
         {

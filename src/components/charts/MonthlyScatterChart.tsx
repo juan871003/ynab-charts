@@ -8,6 +8,7 @@ import {
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 function MonthlyScatterChartImpl({
   transactions,
@@ -47,22 +48,22 @@ function MonthlyScatterChartImpl({
       xAxis: {
         type: "value",
         name: "Inflow",
-        nameTextStyle: { color: "#9aa5b1" },
+        nameTextStyle: { color: ui.axisLabel },
         axisLabel: {
-          color: "#9aa5b1",
+          color: ui.axisLabel,
           formatter: (v: number) => money.format(v),
         },
-        splitLine: { lineStyle: { color: "#2a3544" } },
+        splitLine: { lineStyle: { color: ui.splitLine } },
       },
       yAxis: {
         type: "value",
         name: "Outflow",
-        nameTextStyle: { color: "#9aa5b1" },
+        nameTextStyle: { color: ui.axisLabel },
         axisLabel: {
-          color: "#9aa5b1",
+          color: ui.axisLabel,
           formatter: (v: number) => money.format(v),
         },
-        splitLine: { lineStyle: { color: "#2a3544" } },
+        splitLine: { lineStyle: { color: ui.splitLine } },
       },
       series: [
         {
@@ -73,7 +74,7 @@ function MonthlyScatterChartImpl({
             const net = Math.abs(arr[2] ?? 0);
             return 8 + (net / maxNet) * 28;
           },
-          itemStyle: { color: "#7cb7ff", opacity: 0.85 },
+          itemStyle: { color: ui.accent, opacity: 0.85 },
         },
       ],
     };

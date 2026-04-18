@@ -8,10 +8,11 @@ import {
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 /** Avoid ECharts “contrast” stroke (white-on-dark outline) on treemap tiles. */
 const TREEMAP_LABEL = {
-  color: "#e8ecf1",
+  color: ui.textPrimary,
   textBorderWidth: 0,
   textShadowBlur: 0,
   textShadowColor: "transparent",
@@ -52,7 +53,7 @@ function TreemapChartImpl({
             label: { ...TREEMAP_LABEL },
             upperLabel: { ...TREEMAP_LABEL },
           },
-          itemStyle: { borderColor: "#0f1419" },
+          itemStyle: { borderColor: ui.pageBg },
           data: root.children ?? [],
         },
       ],
@@ -88,7 +89,13 @@ function TreemapChartImpl({
           },
         }}
       />
-      <p style={{ color: "#9aa5b1", fontSize: "0.85rem", marginTop: 8 }}>
+      <p
+        style={{
+          color: "var(--ynab-text-dim)",
+          fontSize: "0.85rem",
+          marginTop: 8,
+        }}
+      >
         Click a tile to filter the transaction table (category group or
         category).
       </p>

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
+import { FiltersPanel } from "@/components/filters/FiltersPanel";
 import type { ChartId } from "@/lib/chartIds";
 
 export function ChartPanel({
@@ -21,9 +22,9 @@ export function ChartPanel({
       style={{
         marginTop: "1.75rem",
         padding: "1.25rem 1.25rem 1rem",
-        border: "1px solid #2f3a49",
-        borderRadius: 10,
-        background: "#151a22",
+        border: "1px solid var(--ynab-border)",
+        borderRadius: 12,
+        background: "var(--ynab-panel)",
       }}
     >
       <header style={{ marginBottom: "1rem" }}>
@@ -32,7 +33,7 @@ export function ChartPanel({
             margin: 0,
             fontSize: "1.1rem",
             fontWeight: 600,
-            color: "#e8eaed",
+            color: "var(--ynab-text)",
             letterSpacing: "0.01em",
           }}
         >
@@ -43,7 +44,7 @@ export function ChartPanel({
             style={{
               margin: "0.35rem 0 0",
               fontSize: "0.82rem",
-              color: "#9aa5b1",
+              color: "var(--ynab-text-dim)",
               lineHeight: 1.45,
               maxWidth: "62ch",
             }}
@@ -51,9 +52,9 @@ export function ChartPanel({
             {description}
           </p>
         ) : null}
-        <div style={{ marginTop: "0.85rem" }}>
+        <FiltersPanel variant="chart">
           {controls ?? <DateRangeFilter chartId={chartId} />}
-        </div>
+        </FiltersPanel>
       </header>
       {children}
     </section>

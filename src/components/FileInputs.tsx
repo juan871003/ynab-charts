@@ -76,15 +76,21 @@ export function FileInputs() {
     <section
       style={{
         padding: "1rem 1.25rem",
-        background: "#1a2332",
-        borderRadius: 8,
-        border: "1px solid #2a3544",
+        background: "var(--ynab-bg-elevated)",
+        borderRadius: 10,
+        border: "1px solid var(--ynab-border)",
       }}
     >
       <h2 style={{ margin: "0 0 0.75rem", fontSize: "1.1rem" }}>
         Load YNAB export
       </h2>
-      <p style={{ margin: "0 0 1rem", color: "#b8c0cc", fontSize: "0.9rem" }}>
+      <p
+        style={{
+          margin: "0 0 1rem",
+          color: "var(--ynab-text-muted)",
+          fontSize: "0.9rem",
+        }}
+      >
         Select your <strong>Plan</strong> and <strong>Register</strong> CSVs
         from <em>Export Plan</em> in the YNAB web app (one or more files—we
         detect which is which from the columns). Data is parsed in your browser
@@ -96,11 +102,11 @@ export function FileInputs() {
           style={{
             margin: "0 0 1rem",
             fontSize: "0.9rem",
-            color: "#9aa5b1",
+            color: "var(--ynab-text-dim)",
           }}
         >
           Last loaded:{" "}
-          <time dateTime={lastLoadedAt} style={{ color: "#c8e0ff" }}>
+          <time dateTime={lastLoadedAt} style={{ color: "var(--ynab-code)" }}>
             {formatLoadedAt(lastLoadedAt)}
           </time>
         </p>
@@ -114,11 +120,12 @@ export function FileInputs() {
         }}
       >
         <label style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-          <span style={{ fontSize: "0.85rem", color: "#9aa5b1" }}>
+          <span style={{ fontSize: "0.85rem", color: "var(--ynab-text-dim)" }}>
             Plan &amp; Register CSVs
           </span>
           <input
             ref={fileRef}
+            className="ynab-file-input"
             type="file"
             accept=".csv,.tsv,text/csv"
             multiple
@@ -126,30 +133,18 @@ export function FileInputs() {
         </label>
         <button
           type="button"
+          className="ynab-btn ynab-btn--primary"
           onClick={() => void onLoad()}
-          style={{
-            padding: "0.5rem 1rem",
-            background: "#3d6fb8",
-            border: "none",
-            borderRadius: 6,
-            color: "#fff",
-          }}
         >
           Parse files
         </button>
         {hasData ? (
           <button
             type="button"
+            className="ynab-btn ynab-btn--secondary"
             onClick={() => {
               setPickError(null);
               reset();
-            }}
-            style={{
-              padding: "0.5rem 1rem",
-              background: "#2a3544",
-              border: "1px solid #3d4d60",
-              borderRadius: 6,
-              color: "#e8eaed",
             }}
           >
             Clear saved data
@@ -157,7 +152,10 @@ export function FileInputs() {
         ) : null}
       </div>
       {alertText ? (
-        <p style={{ color: "#f88", marginTop: "0.75rem" }} role="alert">
+        <p
+          style={{ color: "var(--ynab-error)", marginTop: "0.75rem" }}
+          role="alert"
+        >
           {alertText}
         </p>
       ) : null}

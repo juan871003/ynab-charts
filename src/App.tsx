@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FileInputs } from "@/components/FileInputs";
 import { CurrencySelect } from "@/components/CurrencySelect";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
+import { FiltersPanel } from "@/components/filters/FiltersPanel";
 import {
   GalleryChartBlocks,
   OverviewChartBlocks,
@@ -53,7 +54,13 @@ export default function App() {
         >
           YNAB charts
         </h1>
-        <p style={{ margin: 0, color: "#b8c0cc", maxWidth: "52ch" }}>
+        <p
+          style={{
+            margin: 0,
+            color: "var(--ynab-text-muted)",
+            maxWidth: "52ch",
+          }}
+        >
           Load your exported Plan and Register CSVs to explore spending
           patterns. All processing happens in your browser.
         </p>
@@ -80,17 +87,17 @@ export default function App() {
               style={{
                 marginTop: "1rem",
                 fontSize: "0.9rem",
-                color: "#9aa5b1",
+                color: "var(--ynab-text-dim)",
               }}
             >
               Inferred register date format:{" "}
-              <code style={{ color: "#c8e0ff" }}>{dateFormat}</code>
+              <code style={{ color: "var(--ynab-code)" }}>{dateFormat}</code>
             </p>
           ) : null}
 
-          <div style={{ marginBottom: "0.5rem" }}>
+          <FiltersPanel variant="global">
             <DateRangeFilter />
-          </div>
+          </FiltersPanel>
 
           {selection ? (
             <div
@@ -101,7 +108,9 @@ export default function App() {
                 gap: 12,
               }}
             >
-              <span style={{ color: "#b8c0cc", fontSize: "0.9rem" }}>
+              <span
+                style={{ color: "var(--ynab-text-muted)", fontSize: "0.9rem" }}
+              >
                 Filter:{" "}
                 <strong>
                   {selection.categoryGroup}
@@ -110,14 +119,8 @@ export default function App() {
               </span>
               <button
                 type="button"
+                className="ynab-btn ynab-btn--secondary ynab-btn--sm"
                 onClick={() => setSelection(null)}
-                style={{
-                  padding: "0.35rem 0.75rem",
-                  background: "#2a3544",
-                  border: "1px solid #3d4d60",
-                  borderRadius: 6,
-                  color: "#e8eaed",
-                }}
               >
                 Clear category filter
               </button>
@@ -140,15 +143,8 @@ export default function App() {
                 >
                   <button
                     type="button"
+                    className="ynab-btn ynab-btn--secondary ynab-btn--sm"
                     onClick={() => setShowTransactionsTable(false)}
-                    style={{
-                      padding: "0.35rem 0.75rem",
-                      background: "#2a3544",
-                      border: "1px solid #3d4d60",
-                      borderRadius: 6,
-                      color: "#e8eaed",
-                      fontSize: "0.9rem",
-                    }}
                   >
                     Hide transactions
                   </button>
@@ -158,15 +154,8 @@ export default function App() {
             ) : (
               <button
                 type="button"
+                className="ynab-btn ynab-btn--secondary"
                 onClick={() => setShowTransactionsTable(true)}
-                style={{
-                  padding: "0.5rem 0.9rem",
-                  background: "#2a3544",
-                  border: "1px solid #3d4d60",
-                  borderRadius: 6,
-                  color: "#e8eaed",
-                  fontSize: "0.9rem",
-                }}
               >
                 Show transactions table
               </button>

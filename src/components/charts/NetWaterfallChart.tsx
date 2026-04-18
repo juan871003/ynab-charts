@@ -9,6 +9,7 @@ import { waterfallSeriesFromMonthlyNet } from "@/lib/galleryAggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 /** Stacked-bar waterfall: monthly net cashflow building cumulative position. */
 function NetWaterfallChartImpl({
@@ -39,7 +40,7 @@ function NetWaterfallChartImpl({
       legend: {
         data: ["Start position", "Net this month", "Cumulative (line)"],
         bottom: 0,
-        textStyle: { color: "#b8c0cc" },
+        textStyle: { color: ui.title },
       },
       grid: {
         left: 8,
@@ -52,17 +53,17 @@ function NetWaterfallChartImpl({
         type: "category",
         data: categories,
         axisLabel: {
-          color: "#9aa5b1",
+          color: ui.axisLabel,
           rotate: categories.length > 14 ? 45 : 0,
         },
       },
       yAxis: {
         type: "value",
         axisLabel: {
-          color: "#9aa5b1",
+          color: ui.axisLabel,
           formatter: (v: number) => money.format(v),
         },
-        splitLine: { lineStyle: { color: "#2a3544" } },
+        splitLine: { lineStyle: { color: ui.splitLine } },
       },
       series: [
         {
@@ -78,14 +79,14 @@ function NetWaterfallChartImpl({
           type: "bar",
           stack: "wf",
           data: nets,
-          itemStyle: { color: "#7cb7ff" },
+          itemStyle: { color: ui.accent },
         },
         {
           name: "Cumulative (line)",
           type: "line",
           data: cumulativeEnd,
           symbol: "circle",
-          itemStyle: { color: "#7cb7ff" },
+          itemStyle: { color: ui.accent },
         },
       ],
     };

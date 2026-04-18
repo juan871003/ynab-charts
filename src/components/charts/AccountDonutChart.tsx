@@ -5,6 +5,7 @@ import { topNByOutflow } from "@/lib/galleryAggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 function AccountDonutChartImpl({
   transactions,
@@ -32,7 +33,7 @@ function AccountDonutChartImpl({
         orient: "vertical",
         left: "left",
         top: "middle",
-        textStyle: { color: "#b8c0cc", fontSize: 11 },
+        textStyle: { color: ui.title, fontSize: 11 },
       },
       series: [
         {
@@ -41,7 +42,7 @@ function AccountDonutChartImpl({
           radius: ["42%", "72%"],
           center: ["58%", "50%"],
           avoidLabelOverlap: true,
-          label: { color: "#e8eaed" },
+          label: { color: ui.textPrimary },
           data: parts.map((p) => ({ name: p.name, value: p.value })),
         },
       ],

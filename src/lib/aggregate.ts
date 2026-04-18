@@ -1,10 +1,4 @@
-import {
-  endOfMonth,
-  format,
-  max as dfMax,
-  min as dfMin,
-  startOfMonth,
-} from "date-fns";
+import { endOfMonth, format, max as dfMax, min as dfMin } from "date-fns";
 import type { NormalizedTransaction } from "./types";
 import type { PlanRow } from "./types";
 
@@ -78,100 +72,6 @@ export function intersectDateRanges(
   const end = dfMin([a.end, b.end]);
   if (start > end) return null;
   return { start, end };
-}
-
-function monthKeyBoundsInTransactions(
-  txs: NormalizedTransaction[],
-  clip: DateRange | null
-): { min: string | null; max: string | null } {
-  const filtered = filterTransactions(txs, clip);
-  if (filtered.length === 0) return { min: null, max: null };
-  let minT = filtered[0].date.getTime();
-  let maxT = filtered[0].date.getTime();
-  let minKey = format(filtered[0].date, "yyyy-MM");
-  let maxKey = format(filtered[0].date, "yyyy-MM");
-  for (const t of filtered) {
-    const x = t.date.getTime();
-    if (x < minT) {
-      minT = x;
-      minKey = format(t.date, "yyyy-MM");
-    }
-    if (x > maxT) {
-      maxT = x;
-      maxKey = format(t.date, "yyyy-MM");
-    }
-  }
-  return { min: minKey, max: maxKey };
-}
-
-/** Latest calendar month (yyyy-MM) among transactions inside `clip`. */
-export function latestMonthKeyInTransactions(
-  txs: NormalizedTransaction[],
-  clip: DateRange | null
-): string | null {
-  return monthKeyBoundsInTransactions(txs, clip).max;
-}
-
-export function monthKeyBoundsForTreemap(
-  txs: NormalizedTransaction[],
-  clip: DateRange
-): { min: string | null; max: string | null } {
-  return monthKeyBoundsInTransactions(txs, clip);
-}
-
-export function monthKeyToClippedRange(
-  monthKey: string,
-  clip: DateRange
-): DateRange | null {
-  const [y, m] = monthKey.split("-").map(Number);
-  if (!y || !m) return null;
-  const start = startOfMonth(new Date(y, m - 1, 1));
-  const end = endOfMonth(start);
-  return intersectDateRanges({ start, end }, clip);
-}
-
-export type TreemapViewMode = "month" | "range";
-
-/**
- * If `explicitMonthKey` overlaps the global clip, use it; otherwise the latest
- * month in-range (same as null).
- */
-export function resolveTreemapMonthKey(
-  txs: NormalizedTransaction[],
-  clip: DateRange,
-  explicitMonthKey: string | null
-): string | null {
-  const latest = latestMonthKeyInTransactions(txs, clip);
-  if (!explicitMonthKey) return latest;
-  if (monthKeyToClippedRange(explicitMonthKey, clip)) return explicitMonthKey;
-  return latest;
-}
-
-export function getTreemapFilterRange(options: {
-  transactions: NormalizedTransaction[];
-  globalRange: DateRange | null;
-  mode: TreemapViewMode;
-  treemapMonthKey: string | null;
-  treemapRangeOverride: DateRange | null;
-}): DateRange | null {
-  const {
-    transactions,
-    globalRange,
-    mode,
-    treemapMonthKey,
-    treemapRangeOverride,
-  } = options;
-  const bounds = getTransactionDateBounds(transactions);
-  if (!bounds) return null;
-  const clip = globalRange ?? bounds;
-
-  if (mode === "range") {
-    return treemapRangeOverride ?? clip;
-  }
-
-  const resolved = resolveTreemapMonthKey(transactions, clip, treemapMonthKey);
-  if (!resolved) return null;
-  return monthKeyToClippedRange(resolved, clip);
 }
 
 /** Keep plan rows whose month overlaps the inclusive date range. */

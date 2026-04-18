@@ -6,6 +6,7 @@ import {
   type DateRange,
 } from "@/lib/aggregate";
 import type { NormalizedTransaction } from "@/lib/types";
+import { ui } from "@/lib/visualTheme";
 
 function SankeyChartImpl({
   transactions,
@@ -29,7 +30,7 @@ function SankeyChartImpl({
             ...l,
             lineStyle: { opacity: 0.35 },
           })),
-          label: { color: "#e8eaed" },
+          label: { color: ui.textPrimary },
         },
       ],
     };

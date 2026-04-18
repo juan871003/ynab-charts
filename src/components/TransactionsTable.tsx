@@ -85,8 +85,8 @@ export function TransactionsTable({ rows }: { rows: NormalizedTransaction[] }) {
         style={{
           maxHeight: "min(70vh, 560px)",
           overflow: "auto",
-          border: "1px solid #2a3544",
-          borderRadius: 8,
+          border: "1px solid var(--ynab-border)",
+          borderRadius: 10,
         }}
       >
         <table
@@ -102,8 +102,8 @@ export function TransactionsTable({ rows }: { rows: NormalizedTransaction[] }) {
               position: "sticky",
               top: 0,
               zIndex: 1,
-              background: "#1a2332",
-              boxShadow: "0 1px 0 #2a3544",
+              background: "var(--ynab-bg-elevated)",
+              boxShadow: "0 1px 0 var(--ynab-border)",
             }}
           >
             {table.getHeaderGroups().map((hg) => (
@@ -114,8 +114,8 @@ export function TransactionsTable({ rows }: { rows: NormalizedTransaction[] }) {
                     style={{
                       textAlign: "left",
                       padding: "0.5rem 0.75rem",
-                      borderBottom: "1px solid #2a3544",
-                      color: "#b8c0cc",
+                      borderBottom: "1px solid var(--ynab-border)",
+                      color: "var(--ynab-text-muted)",
                       cursor: h.column.getCanSort() ? "pointer" : undefined,
                     }}
                     onClick={h.column.getToggleSortingHandler()}
@@ -151,7 +151,7 @@ export function TransactionsTable({ rows }: { rows: NormalizedTransaction[] }) {
                   data-index={vr.index}
                   ref={rowVirtualizer.measureElement}
                   style={{
-                    borderBottom: "1px solid #1e2835",
+                    borderBottom: "1px solid rgba(46, 46, 66, 0.55)",
                   }}
                 >
                   {row.getVisibleCells().map((cell) => (

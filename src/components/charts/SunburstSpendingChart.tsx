@@ -8,6 +8,7 @@ import {
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 function SunburstSpendingChartImpl({
   transactions,
@@ -41,7 +42,7 @@ function SunburstSpendingChartImpl({
           itemStyle: {
             borderRadius: 4,
             borderWidth: 1,
-            borderColor: "#0f1419",
+            borderColor: ui.pageBg,
           },
         },
       ],

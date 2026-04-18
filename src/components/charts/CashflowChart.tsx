@@ -6,6 +6,7 @@ import {
   type DateRange,
 } from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
+import { ui } from "@/lib/visualTheme";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
@@ -25,7 +26,6 @@ function CashflowChartImpl({
   const option = useMemo(() => {
     const txs = filterRegisterForCharts(transactions, dateRange);
     const pts = aggregateMonthlyCashflow(txs);
-    console.log({ txs, pts });
     const labels = pts.map((p) => p.label);
     return {
       title: { show: false },
@@ -36,7 +36,7 @@ function CashflowChartImpl({
       legend: {
         data: ["Inflow", "Outflow", "Net"],
         bottom: 0,
-        textStyle: { color: "#b8c0cc" },
+        textStyle: { color: ui.title },
       },
       grid: {
         left: 8,
@@ -48,34 +48,37 @@ function CashflowChartImpl({
       xAxis: {
         type: "category",
         data: labels,
-        axisLabel: { color: "#9aa5b1", rotate: labels.length > 18 ? 45 : 0 },
+        axisLabel: {
+          color: ui.axisLabel,
+          rotate: labels.length > 18 ? 45 : 0,
+        },
       },
       yAxis: {
         type: "value",
         axisLabel: {
-          color: "#9aa5b1",
+          color: ui.axisLabel,
           formatter: (v: number) => money.format(v),
         },
-        splitLine: { lineStyle: { color: "#2a3544" } },
+        splitLine: { lineStyle: { color: ui.splitLine } },
       },
       series: [
         {
           name: "Inflow",
           type: "bar",
           data: pts.map((p) => p.inflow),
-          itemStyle: { color: "#5d9e6b" },
+          itemStyle: { color: "#c8e65c" },
         },
         {
           name: "Outflow",
           type: "bar",
           data: pts.map((p) => p.outflow),
-          itemStyle: { color: "#c75c5c" },
+          itemStyle: { color: "#e95858" },
         },
         {
           name: "Net",
           type: "line",
           data: pts.map((p) => p.net),
-          itemStyle: { color: "#7cb7ff" },
+          itemStyle: { color: ui.accent },
           smooth: true,
         },
       ],

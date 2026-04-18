@@ -3,6 +3,7 @@ import ReactECharts from "echarts-for-react";
 import { filterRegisterForCharts, type DateRange } from "@/lib/aggregate";
 import { buildInflowSankey } from "@/lib/galleryAggregate";
 import type { NormalizedTransaction } from "@/lib/types";
+import { ui } from "@/lib/visualTheme";
 
 function InflowSankeyChartImpl({
   transactions,
@@ -26,7 +27,7 @@ function InflowSankeyChartImpl({
             ...l,
             lineStyle: { opacity: 0.35 },
           })),
-          label: { color: "#e8eaed" },
+          label: { color: ui.textPrimary },
         },
       ],
     };

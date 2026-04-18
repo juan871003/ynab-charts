@@ -1,10 +1,35 @@
+/* YNAB-inspired dark theme (green accent, consistent controls) */
 :root {
+  --ynab-bg: #12121c;
+  --ynab-bg-elevated: #181824;
+  --ynab-panel: #1e1e2e;
+  --ynab-popover-bg: #1e1e30;
+  --ynab-pill-bg: #2a2a3c;
+  --ynab-btn-bg: #2a2a3c;
+  --ynab-border: #2e2e42;
+  --ynab-border-strong: #3d3d55;
+  --ynab-text: #f0f0f5;
+  --ynab-text-muted: #b5b5c8;
+  --ynab-text-dim: #9898ac;
+  --ynab-accent: #29ce7d;
+  --ynab-link: #5dd4a8;
+  --ynab-code: #8fd4bc;
+  --ynab-primary-btn: #29ce7d;
+  --ynab-primary-btn-hover: #34d688;
+  --ynab-on-primary: #0a1a12;
+  --ynab-error: #ff8a8a;
+  --ynab-hover-overlay: rgba(255, 255, 255, 0.06);
+  --ynab-focus-ring: rgba(41, 206, 125, 0.45);
+  --ynab-control-h: 36px;
+  --ynab-radius: 8px;
+  --ynab-radius-panel: 12px;
+
   font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell,
     Noto Sans, sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #e8eaed;
-  background-color: #0f1419;
+  color: var(--ynab-text);
+  background-color: var(--ynab-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -19,6 +44,7 @@
 body {
   margin: 0;
   min-height: 100vh;
+  background: var(--ynab-bg);
 }
 
 #root {
@@ -26,7 +52,7 @@ body {
 }
 
 a {
-  color: #7cb7ff;
+  color: var(--ynab-link);
 }
 
 button {
@@ -37,6 +63,201 @@ button {
 input[type="file"] {
   font: inherit;
   color: inherit;
+}
+
+input[type="file"].ynab-file-input::file-selector-button,
+input[type="file"].ynab-file-input::-webkit-file-upload-button {
+  margin-right: 0.75rem;
+  min-height: var(--ynab-control-h);
+  padding: 0 14px;
+  border-radius: var(--ynab-radius);
+  border: 1px solid var(--ynab-border-strong);
+  background: var(--ynab-btn-bg);
+  color: var(--ynab-text);
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease;
+}
+
+input[type="file"].ynab-file-input::file-selector-button:hover,
+input[type="file"].ynab-file-input::-webkit-file-upload-button:hover {
+  background: var(--ynab-pill-bg);
+}
+
+input[type="file"].ynab-file-input::file-selector-button:focus-visible,
+input[type="file"].ynab-file-input::-webkit-file-upload-button:focus-visible {
+  outline: 2px solid var(--ynab-focus-ring);
+  outline-offset: 2px;
+}
+
+select.ynab-select {
+  min-height: var(--ynab-control-h);
+  padding: 0 10px;
+  border-radius: var(--ynab-radius);
+  border: 1px solid var(--ynab-border-strong);
+  background: var(--ynab-pill-bg);
+  color: var(--ynab-text);
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+  max-width: min(100%, 22rem);
+}
+
+select.ynab-select:focus-visible {
+  outline: 2px solid var(--ynab-focus-ring);
+  outline-offset: 2px;
+}
+
+/**
+ * App-wide buttons: one height, radius, and weight; variants mirror YNAB dark UI.
+ */
+.ynab-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  box-sizing: border-box;
+  min-height: var(--ynab-control-h);
+  padding: 0 14px;
+  border-radius: var(--ynab-radius);
+  border: 1px solid transparent;
+  background: var(--ynab-btn-bg);
+  color: var(--ynab-text);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+}
+
+.ynab-btn:hover:not(:disabled) {
+  background: var(--ynab-pill-bg);
+}
+
+.ynab-btn:focus-visible {
+  outline: 2px solid var(--ynab-focus-ring);
+  outline-offset: 2px;
+}
+
+.ynab-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ynab-btn--primary {
+  background: var(--ynab-primary-btn);
+  border-color: transparent;
+  color: var(--ynab-on-primary);
+}
+
+.ynab-btn--primary:hover:not(:disabled) {
+  background: var(--ynab-primary-btn-hover);
+}
+
+.ynab-btn--secondary {
+  background: var(--ynab-btn-bg);
+  border-color: var(--ynab-border-strong);
+  color: var(--ynab-text);
+}
+
+.ynab-btn--secondary:hover:not(:disabled) {
+  background: var(--ynab-pill-bg);
+  border-color: var(--ynab-border-strong);
+}
+
+.ynab-btn--ghost {
+  background: transparent;
+  border-color: var(--ynab-border-strong);
+  color: var(--ynab-text-muted);
+  font-weight: 500;
+}
+
+.ynab-btn--ghost:hover:not(:disabled) {
+  background: var(--ynab-hover-overlay);
+  color: var(--ynab-text);
+}
+
+.ynab-btn--sm {
+  min-height: 32px;
+  padding: 0 12px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.ynab-menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--ynab-text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.ynab-menu-item:hover:not(:disabled) {
+  background: var(--ynab-hover-overlay);
+}
+
+/** Composite month range control (matches control height / radius) */
+.ynab-range-shell {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--ynab-radius);
+  border: 1px solid var(--ynab-border);
+  background: var(--ynab-pill-bg);
+  overflow: hidden;
+}
+
+.ynab-range-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: var(--ynab-control-h);
+  height: var(--ynab-control-h);
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--ynab-text-muted);
+}
+
+.ynab-range-arrow:not(:disabled):hover {
+  background: var(--ynab-hover-overlay);
+  color: var(--ynab-text);
+}
+
+.ynab-range-arrow:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ynab-range-arrow:focus-visible,
+.ynab-range-trigger:focus-visible {
+  outline: 2px solid var(--ynab-focus-ring);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.ynab-range-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--ynab-control-h);
+  padding: 0 14px;
+  border: none;
+  border-left: 1px solid var(--ynab-border);
+  border-right: 1px solid var(--ynab-border);
+  background: transparent;
+  color: var(--ynab-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
 }
 
 table {

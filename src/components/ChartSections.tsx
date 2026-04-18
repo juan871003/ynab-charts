@@ -1,12 +1,11 @@
-import { memo, useMemo, type ComponentType } from "react";
+import { memo, type ComponentType } from "react";
 import { useAppStore } from "@/store/appStore";
 import { ChartPanel } from "@/components/ChartPanel";
-import { getTreemapFilterRange, type DateRange } from "@/lib/aggregate";
+import type { DateRange } from "@/lib/aggregate";
 import type { ChartId } from "@/lib/chartIds";
 import type { NormalizedTransaction } from "@/lib/types";
 import { CashflowChart } from "@/components/charts/CashflowChart";
 import { TreemapChart } from "@/components/charts/TreemapChart";
-import { TreemapDateControls } from "@/components/TreemapDateControls";
 import { PlanActivityChart } from "@/components/charts/PlanActivityChart";
 import { SankeyChart } from "@/components/charts/SankeyChart";
 import { CalendarHeatmapChart } from "@/components/charts/CalendarHeatmapChart";
@@ -27,7 +26,7 @@ function GroupHeading({ children }: { children: string }) {
         margin: "2.25rem 0 0",
         fontSize: "1.2rem",
         fontWeight: 600,
-        color: "#c5ced9",
+        color: "var(--ynab-text-muted)",
         letterSpacing: "0.02em",
       }}
     >
@@ -64,44 +63,12 @@ const CashflowSection = makeRegisterSection(
   undefined,
   CashflowChart
 );
-const TreemapSection = memo(function TreemapSection() {
-  const transactions = useAppStore((s) => s.transactions);
-  const globalRange = useAppStore((s) => s.dateRange);
-  const treemapViewMode = useAppStore((s) => s.treemapViewMode);
-  const treemapMonthKey = useAppStore((s) => s.treemapMonthKey);
-  const treemapRangeOverride = useAppStore(
-    (s) => s.chartDateOverrides.treemap ?? null
-  );
-
-  const dateRange = useMemo(
-    () =>
-      getTreemapFilterRange({
-        transactions,
-        globalRange,
-        mode: treemapViewMode,
-        treemapMonthKey,
-        treemapRangeOverride,
-      }),
-    [
-      transactions,
-      globalRange,
-      treemapViewMode,
-      treemapMonthKey,
-      treemapRangeOverride,
-    ]
-  );
-
-  return (
-    <ChartPanel
-      title="Spending by category (treemap)"
-      description="Default is a single month (latest month in your global range). Switch to date range to sum spending across custom bounds."
-      chartId="treemap"
-      controls={<TreemapDateControls />}
-    >
-      <TreemapChart transactions={transactions} dateRange={dateRange} />
-    </ChartPanel>
-  );
-});
+const TreemapSection = makeRegisterSection(
+  "treemap",
+  "Spending by category (treemap)",
+  "Sums outflows in the selected month range (same date filter as other charts).",
+  TreemapChart
+);
 const SankeySection = makeRegisterSection(
   "sankey",
   "Outflows → category groups (Sankey)",

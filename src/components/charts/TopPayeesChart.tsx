@@ -5,6 +5,7 @@ import { topPayeesPareto } from "@/lib/galleryAggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
+import { ui } from "@/lib/visualTheme";
 
 function TopPayeesChartImpl({
   transactions,
@@ -42,23 +43,23 @@ function TopPayeesChartImpl({
       legend: {
         data: ["Outflow", "Cumulative %"],
         bottom: 0,
-        textStyle: { color: "#b8c0cc" },
+        textStyle: { color: ui.title },
       },
       grid: { left: 120, right: 56, top: 28, bottom: 56 },
       xAxis: [
         {
           type: "value",
           axisLabel: {
-            color: "#9aa5b1",
+            color: ui.axisLabel,
             formatter: (v: number) => money.format(v),
           },
-          splitLine: { lineStyle: { color: "#2a3544" } },
+          splitLine: { lineStyle: { color: ui.splitLine } },
         },
         {
           type: "value",
           max: 1,
           axisLabel: {
-            color: "#9aa5b1",
+            color: ui.axisLabel,
             formatter: (v: number) => `${(v * 100).toFixed(0)}%`,
           },
           splitLine: { show: false },
@@ -68,7 +69,7 @@ function TopPayeesChartImpl({
         type: "category",
         data: labels,
         inverse: true,
-        axisLabel: { color: "#9aa5b1", fontSize: 11 },
+        axisLabel: { color: ui.axisLabel, fontSize: 11 },
       },
       series: [
         {
@@ -76,14 +77,14 @@ function TopPayeesChartImpl({
           type: "bar",
           xAxisIndex: 0,
           data: rows.map((r) => r.total),
-          itemStyle: { color: "#91cc75" },
+          itemStyle: { color: "#c8e65c" },
         },
         {
           name: "Cumulative %",
           type: "line",
           xAxisIndex: 1,
           data: rows.map((r) => r.cumulativeShare),
-          itemStyle: { color: "#fac858" },
+          itemStyle: { color: "#f2c14e" },
           symbol: "circle",
           symbolSize: 6,
         },
