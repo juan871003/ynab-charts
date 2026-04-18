@@ -1,15 +1,23 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   buildSpendingTreemap,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function TreemapChart({
+/** Avoid ECharts “contrast” stroke (white-on-dark outline) on treemap tiles. */
+const TREEMAP_LABEL = {
+  color: "#e8ecf1",
+  textBorderWidth: 0,
+  textShadowBlur: 0,
+  textShadowColor: "transparent",
+} as const;
+
+function TreemapChartImpl({
   transactions,
   dateRange,
 }: {
@@ -24,14 +32,10 @@ export function TreemapChart({
   );
 
   const { option, dataRoot } = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const root = buildSpendingTreemap(txs);
     const opt = {
-      title: {
-        text: "Spending by category (treemap)",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: {
         formatter: (info: { name: string; value: number }) =>
           `${info.name}: ${money.format(info.value)}`,
@@ -42,8 +46,12 @@ export function TreemapChart({
           roam: false,
           nodeClick: "zoomToNode",
           breadcrumb: { show: true },
-          label: { show: true, color: "#fff", fontSize: 11 },
-          upperLabel: { show: true },
+          label: { show: true, fontSize: 11, ...TREEMAP_LABEL },
+          upperLabel: { show: true, height: 20, ...TREEMAP_LABEL },
+          emphasis: {
+            label: { ...TREEMAP_LABEL },
+            upperLabel: { ...TREEMAP_LABEL },
+          },
           itemStyle: { borderColor: "#0f1419" },
           data: root.children ?? [],
         },
@@ -55,14 +63,18 @@ export function TreemapChart({
   if (transactions.length === 0 || !dataRoot.children?.length) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
+    <>
       <ReactECharts
         option={option}
         style={{ height: 420 }}
         notMerge
         lazyUpdate
         onEvents={{
-          click: (params: { treePathInfo?: { name: string }[] }) => {
+          click: (params: {
+            event?: unknown;
+            treePathInfo?: { name: string }[];
+          }) => {
+            if (params.event == null) return;
             const path = params.treePathInfo?.map((x) => x.name) ?? [];
             const segments = path[0] === "Spending" ? path.slice(1) : path;
             if (segments.length === 1) {
@@ -80,6 +92,8 @@ export function TreemapChart({
         Click a tile to filter the transaction table (category group or
         category).
       </p>
-    </div>
+    </>
   );
 }
+
+export const TreemapChart = memo(TreemapChartImpl);

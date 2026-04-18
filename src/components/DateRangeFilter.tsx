@@ -1,6 +1,7 @@
 import { format } from "date-fns";
 import { useAppStore } from "@/store/appStore";
 import type { DateRange } from "@/lib/aggregate";
+import type { ChartId } from "@/lib/chartIds";
 
 function toInput(d: Date): string {
   return format(d, "yyyy-MM-dd");
@@ -12,10 +13,19 @@ function parseInput(s: string): Date | null {
   return new Date(y, m - 1, d);
 }
 
-export function DateRangeFilter() {
+type Props = {
+  /** When set, edits only this chart’s range (global range is the default). */
+  chartId?: ChartId;
+};
+
+export function DateRangeFilter({ chartId }: Props) {
   const transactions = useAppStore((s) => s.transactions);
-  const dateRange = useAppStore((s) => s.dateRange);
+  const globalRange = useAppStore((s) => s.dateRange);
+  const override = useAppStore((s) =>
+    chartId ? s.chartDateOverrides[chartId] : undefined
+  );
   const setDateRange = useAppStore((s) => s.setDateRange);
+  const setChartDateRange = useAppStore((s) => s.setChartDateRange);
 
   if (transactions.length === 0) return null;
 
@@ -30,7 +40,16 @@ export function DateRangeFilter() {
     return { start: new Date(min), end: new Date(max) };
   })();
 
-  const current = dateRange ?? bounds;
+  const effectiveGlobal = globalRange ?? bounds;
+  const current = chartId ? override ?? effectiveGlobal : effectiveGlobal;
+
+  const apply = (next: DateRange) => {
+    if (chartId) {
+      setChartDateRange(chartId, next);
+    } else {
+      setDateRange(next);
+    }
+  };
 
   const update = (partial: Partial<DateRange>) => {
     const next: DateRange = {
@@ -38,20 +57,20 @@ export function DateRangeFilter() {
       end: partial.end ?? current.end,
     };
     if (next.start > next.end) return;
-    setDateRange(next);
+    apply(next);
   };
+
+  const isPerChart = Boolean(chartId);
 
   return (
     <div
       style={{
         display: "flex",
         flexWrap: "wrap",
-        gap: "1rem",
+        gap: "0.75rem",
         alignItems: "center",
-        marginBottom: "1rem",
       }}
     >
-      <span style={{ color: "#9aa5b1", fontSize: "0.9rem" }}>Date range</span>
       <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ fontSize: "0.85rem" }}>From</span>
         <input
@@ -80,17 +99,34 @@ export function DateRangeFilter() {
       </label>
       <button
         type="button"
-        onClick={() => setDateRange(bounds)}
+        onClick={() => apply(bounds)}
         style={{
           padding: "0.35rem 0.75rem",
           background: "#2a3544",
           border: "1px solid #3d4d60",
           borderRadius: 6,
           color: "#e8eaed",
+          fontSize: "0.85rem",
         }}
       >
         Full range
       </button>
+      {isPerChart ? (
+        <button
+          type="button"
+          onClick={() => chartId && setChartDateRange(chartId, null)}
+          style={{
+            padding: "0.35rem 0.75rem",
+            background: "transparent",
+            border: "1px solid #3d4d60",
+            borderRadius: 6,
+            color: "#b8c0cc",
+            fontSize: "0.85rem",
+          }}
+        >
+          Use global range
+        </button>
+      ) : null}
     </div>
   );
 }

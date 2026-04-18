@@ -2,21 +2,10 @@ import { useEffect, useMemo, useState } from "react";
 import { FileInputs } from "@/components/FileInputs";
 import { CurrencySelect } from "@/components/CurrencySelect";
 import { DateRangeFilter } from "@/components/DateRangeFilter";
-import { CashflowChart } from "@/components/charts/CashflowChart";
-import { TreemapChart } from "@/components/charts/TreemapChart";
-import { PlanActivityChart } from "@/components/charts/PlanActivityChart";
-import { SankeyChart } from "@/components/charts/SankeyChart";
-import { CalendarHeatmapChart } from "@/components/charts/CalendarHeatmapChart";
-import { DayOfWeekChart } from "@/components/charts/DayOfWeekChart";
-import { TopPayeesChart } from "@/components/charts/TopPayeesChart";
-import { AccountDonutChart } from "@/components/charts/AccountDonutChart";
-import { RegisterStackedAreaChart } from "@/components/charts/RegisterStackedAreaChart";
-import { MonthlyScatterChart } from "@/components/charts/MonthlyScatterChart";
-import { RadarCompareChart } from "@/components/charts/RadarCompareChart";
-import { NetWaterfallChart } from "@/components/charts/NetWaterfallChart";
-import { SunburstSpendingChart } from "@/components/charts/SunburstSpendingChart";
-import { InflowSankeyChart } from "@/components/charts/InflowSankeyChart";
-import { ChartSection } from "@/components/ChartSection";
+import {
+  GalleryChartBlocks,
+  OverviewChartBlocks,
+} from "@/components/ChartSections";
 import { TransactionsTable } from "@/components/TransactionsTable";
 import { getVisibleTransactions } from "@/lib/filterTx";
 import { loadPersisted } from "@/lib/persistedData";
@@ -33,7 +22,6 @@ export default function App() {
   }, []);
 
   const transactions = useAppStore((s) => s.transactions);
-  const planRows = useAppStore((s) => s.planRows);
   const dateRange = useAppStore((s) => s.dateRange);
   const selection = useAppStore((s) => s.selection);
   const dateFormat = useAppStore((s) => s.dateFormat);
@@ -100,7 +88,9 @@ export default function App() {
             </p>
           ) : null}
 
-          <DateRangeFilter />
+          <div style={{ marginBottom: "0.5rem" }}>
+            <DateRangeFilter />
+          </div>
 
           {selection ? (
             <div
@@ -134,40 +124,8 @@ export default function App() {
             </div>
           ) : null}
 
-          <ChartSection title="Overview">
-            <CashflowChart transactions={transactions} dateRange={dateRange} />
-            <TreemapChart transactions={transactions} dateRange={dateRange} />
-            <PlanActivityChart planRows={planRows} />
-            <SankeyChart transactions={transactions} dateRange={dateRange} />
-            <CalendarHeatmapChart
-              transactions={transactions}
-              dateRange={dateRange}
-            />
-          </ChartSection>
-
-          <ChartSection title="Gallery — more chart types">
-            <DayOfWeekChart transactions={transactions} dateRange={dateRange} />
-            <TopPayeesChart transactions={transactions} dateRange={dateRange} />
-            <AccountDonutChart transactions={transactions} dateRange={dateRange} />
-            <RegisterStackedAreaChart
-              transactions={transactions}
-              dateRange={dateRange}
-            />
-            <MonthlyScatterChart
-              transactions={transactions}
-              dateRange={dateRange}
-            />
-            <RadarCompareChart
-              transactions={transactions}
-              dateRange={dateRange}
-            />
-            <NetWaterfallChart transactions={transactions} dateRange={dateRange} />
-            <SunburstSpendingChart
-              transactions={transactions}
-              dateRange={dateRange}
-            />
-            <InflowSankeyChart transactions={transactions} dateRange={dateRange} />
-          </ChartSection>
+          <OverviewChartBlocks />
+          <GalleryChartBlocks />
 
           <section style={{ marginTop: "2rem" }}>
             {showTransactionsTable ? (

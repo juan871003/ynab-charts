@@ -1,16 +1,16 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import { format, subMonths } from "date-fns";
 import {
   aggregateDailyOutflow,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function CalendarHeatmapChart({
+function CalendarHeatmapChartImpl({
   transactions,
   dateRange,
 }: {
@@ -24,7 +24,7 @@ export function CalendarHeatmapChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const daily = aggregateDailyOutflow(txs);
     const data: [string, number][] = [...daily.entries()].map(([d, v]) => [
       d,
@@ -43,7 +43,7 @@ export function CalendarHeatmapChart({
 
     return {
       title: {
-        text: "Daily outflows (calendar)",
+        text: "",
         subtext: `${startStr} — ${endStr}`,
         left: "center",
         textStyle: { color: "#e8eaed" },
@@ -87,13 +87,8 @@ export function CalendarHeatmapChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts
-        option={option}
-        style={{ height: 280 }}
-        notMerge
-        lazyUpdate
-      />
-    </div>
+    <ReactECharts option={option} style={{ height: 280 }} notMerge lazyUpdate />
   );
 }
+
+export const CalendarHeatmapChart = memo(CalendarHeatmapChartImpl);

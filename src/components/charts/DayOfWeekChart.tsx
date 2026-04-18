@@ -1,12 +1,12 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import { filterTransactions, type DateRange } from "@/lib/aggregate";
+import { filterRegisterForCharts, type DateRange } from "@/lib/aggregate";
 import { aggregateWeekdayOutflow } from "@/lib/galleryAggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function DayOfWeekChart({
+function DayOfWeekChartImpl({
   transactions,
   dateRange,
 }: {
@@ -20,15 +20,11 @@ export function DayOfWeekChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const pts = aggregateWeekdayOutflow(txs);
     const labels = pts.map((p) => p.label);
     return {
-      title: {
-        text: "Outflow by weekday (mean per transaction)",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: {
         trigger: "axis",
         valueFormatter: (v: number) => money.format(v),
@@ -38,7 +34,7 @@ export function DayOfWeekChart({
         bottom: 0,
         textStyle: { color: "#b8c0cc" },
       },
-      grid: { left: 48, right: 48, top: 48, bottom: 56 },
+      grid: { left: 48, right: 48, top: 28, bottom: 56 },
       xAxis: {
         type: "category",
         data: labels,
@@ -83,8 +79,8 @@ export function DayOfWeekChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts option={option} style={{ height: 320 }} notMerge lazyUpdate />
-    </div>
+    <ReactECharts option={option} style={{ height: 320 }} notMerge lazyUpdate />
   );
 }
+
+export const DayOfWeekChart = memo(DayOfWeekChartImpl);

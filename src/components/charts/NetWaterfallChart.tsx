@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   aggregateMonthlyCashflow,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import { waterfallSeriesFromMonthlyNet } from "@/lib/galleryAggregate";
@@ -11,7 +11,7 @@ import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
 /** Stacked-bar waterfall: monthly net cashflow building cumulative position. */
-export function NetWaterfallChart({
+function NetWaterfallChartImpl({
   transactions,
   dateRange,
 }: {
@@ -25,19 +25,13 @@ export function NetWaterfallChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const monthly = aggregateMonthlyCashflow(txs);
     const { categories, base, nets, cumulativeEnd } =
       waterfallSeriesFromMonthlyNet(monthly);
 
     return {
-      title: {
-        text: "Monthly net (waterfall-style)",
-        subtext: "Transparent bar = start of month cumulative; colored = this month net; line = end cumulative",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-        subtextStyle: { color: "#9aa5b1", fontSize: 11 },
-      },
+      title: { show: false },
       tooltip: {
         trigger: "axis",
         valueFormatter: (v: number) => money.format(v),
@@ -47,11 +41,20 @@ export function NetWaterfallChart({
         bottom: 0,
         textStyle: { color: "#b8c0cc" },
       },
-      grid: { left: 48, right: 24, top: 72, bottom: 72 },
+      grid: {
+        left: 8,
+        right: 24,
+        top: 28,
+        bottom: 72,
+        containLabel: true,
+      },
       xAxis: {
         type: "category",
         data: categories,
-        axisLabel: { color: "#9aa5b1", rotate: categories.length > 14 ? 45 : 0 },
+        axisLabel: {
+          color: "#9aa5b1",
+          rotate: categories.length > 14 ? 45 : 0,
+        },
       },
       yAxis: {
         type: "value",
@@ -91,8 +94,8 @@ export function NetWaterfallChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts option={option} style={{ height: 380 }} notMerge lazyUpdate />
-    </div>
+    <ReactECharts option={option} style={{ height: 380 }} notMerge lazyUpdate />
   );
 }
+
+export const NetWaterfallChart = memo(NetWaterfallChartImpl);

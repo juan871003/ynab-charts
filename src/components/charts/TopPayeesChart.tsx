@@ -1,12 +1,12 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import { filterTransactions, type DateRange } from "@/lib/aggregate";
+import { filterRegisterForCharts, type DateRange } from "@/lib/aggregate";
 import { topPayeesPareto } from "@/lib/galleryAggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function TopPayeesChart({
+function TopPayeesChartImpl({
   transactions,
   dateRange,
 }: {
@@ -20,19 +20,17 @@ export function TopPayeesChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const rows = topPayeesPareto(txs, 15);
     const labels = rows.map((r) => r.payee);
     return {
-      title: {
-        text: "Top payees by outflow (Pareto)",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "cross" },
-        formatter: (params: { seriesName: string; value: number; name: string }[]) => {
+        formatter: (
+          params: { seriesName: string; value: number; name: string }[]
+        ) => {
           const lines = params.map((p) => {
             if (p.seriesName === "Cumulative %")
               return `${p.seriesName}: ${(p.value * 100).toFixed(1)}%`;
@@ -46,7 +44,7 @@ export function TopPayeesChart({
         bottom: 0,
         textStyle: { color: "#b8c0cc" },
       },
-      grid: { left: 120, right: 56, top: 48, bottom: 56 },
+      grid: { left: 120, right: 56, top: 28, bottom: 56 },
       xAxis: [
         {
           type: "value",
@@ -96,8 +94,8 @@ export function TopPayeesChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts option={option} style={{ height: 420 }} notMerge lazyUpdate />
-    </div>
+    <ReactECharts option={option} style={{ height: 420 }} notMerge lazyUpdate />
   );
 }
+
+export const TopPayeesChart = memo(TopPayeesChartImpl);

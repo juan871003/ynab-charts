@@ -10,7 +10,8 @@ import type {
   NormalizedTransaction,
   PlanRow,
 } from "@/lib/types";
-import type { DateRange } from "@/lib/aggregate";
+import type { ChartId } from "@/lib/chartIds";
+import type { DateRange, TreemapViewMode } from "@/lib/aggregate";
 import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/money";
 import {
   clearPersisted,
@@ -37,6 +38,12 @@ interface AppState {
   /** ISO 8601 — last successful manual parse (or restored session time). */
   lastLoadedAt: string | null;
   dateRange: DateRange | null;
+  /** Per-chart date range; missing key means “use global `dateRange`”. */
+  chartDateOverrides: Partial<Record<ChartId, DateRange>>;
+  /** Treemap: `month` (default) uses a calendar month clipped to the global range; `range` uses the per-chart date picker. */
+  treemapViewMode: TreemapViewMode;
+  /** `null` = use the latest month that falls inside the global range. */
+  treemapMonthKey: string | null;
   selection: CategorySelection | null;
   /** ISO 4217 code for display formatting only. */
   displayCurrency: string;
@@ -46,6 +53,9 @@ interface AppState {
     options?: SetFromFilesOptions
   ) => void;
   setDateRange: (range: DateRange | null) => void;
+  setChartDateRange: (chartId: ChartId, range: DateRange | null) => void;
+  setTreemapViewMode: (mode: TreemapViewMode) => void;
+  setTreemapMonthKey: (monthKey: string | null) => void;
   setSelection: (s: CategorySelection | null) => void;
   setDisplayCurrency: (code: string) => void;
   reset: () => void;
@@ -72,6 +82,9 @@ export const useAppStore = create<AppState>((set) => ({
   loadError: null,
   lastLoadedAt: null,
   dateRange: null,
+  chartDateOverrides: {},
+  treemapViewMode: "month",
+  treemapMonthKey: null,
   selection: null,
   displayCurrency: DEFAULT_DISPLAY_CURRENCY,
 
@@ -112,6 +125,9 @@ export const useAppStore = create<AppState>((set) => ({
           loadError: null,
           lastLoadedAt: loadedAt,
           dateRange,
+          chartDateOverrides: {},
+          treemapViewMode: "month",
+          treemapMonthKey: null,
           selection: null,
         };
       } catch (e) {
@@ -121,7 +137,32 @@ export const useAppStore = create<AppState>((set) => ({
     });
   },
 
-  setDateRange: (range) => set({ dateRange: range }),
+  setDateRange: (range) => set({ dateRange: range, chartDateOverrides: {} }),
+
+  setChartDateRange: (chartId, range) =>
+    set((state) => {
+      const clearTreemapSelection =
+        chartId === "treemap"
+          ? { selection: null satisfies CategorySelection | null }
+          : {};
+      if (range === null) {
+        const next = { ...state.chartDateOverrides };
+        delete next[chartId];
+        return { chartDateOverrides: next, ...clearTreemapSelection };
+      }
+      return {
+        chartDateOverrides: {
+          ...state.chartDateOverrides,
+          [chartId]: range,
+        },
+        ...clearTreemapSelection,
+      };
+    }),
+
+  setTreemapViewMode: (mode) => set({ treemapViewMode: mode, selection: null }),
+
+  setTreemapMonthKey: (monthKey) =>
+    set({ treemapMonthKey: monthKey, selection: null }),
 
   setSelection: (s) => set({ selection: s }),
 
@@ -138,6 +179,9 @@ export const useAppStore = create<AppState>((set) => ({
       loadError: null,
       lastLoadedAt: null,
       dateRange: null,
+      chartDateOverrides: {},
+      treemapViewMode: "month",
+      treemapMonthKey: null,
       selection: null,
     });
   },

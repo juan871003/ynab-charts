@@ -1,15 +1,15 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   aggregateMonthlyCashflow,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function CashflowChart({
+function CashflowChartImpl({
   transactions,
   dateRange,
 }: {
@@ -23,15 +23,12 @@ export function CashflowChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const pts = aggregateMonthlyCashflow(txs);
+    console.log({ txs, pts });
     const labels = pts.map((p) => p.label);
     return {
-      title: {
-        text: "Monthly cashflow",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: {
         trigger: "axis",
         valueFormatter: (v: number) => money.format(v),
@@ -41,7 +38,13 @@ export function CashflowChart({
         bottom: 0,
         textStyle: { color: "#b8c0cc" },
       },
-      grid: { left: 48, right: 24, top: 48, bottom: 56 },
+      grid: {
+        left: 8,
+        right: 24,
+        top: 28,
+        bottom: 56,
+        containLabel: true,
+      },
       xAxis: {
         type: "category",
         data: labels,
@@ -82,13 +85,8 @@ export function CashflowChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts
-        option={option}
-        style={{ height: 360 }}
-        notMerge
-        lazyUpdate
-      />
-    </div>
+    <ReactECharts option={option} style={{ height: 360 }} notMerge lazyUpdate />
   );
 }
+
+export const CashflowChart = memo(CashflowChartImpl);

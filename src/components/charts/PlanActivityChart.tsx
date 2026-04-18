@@ -1,11 +1,21 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import { aggregatePlanActivityByGroup } from "@/lib/aggregate";
+import {
+  aggregatePlanActivityByGroup,
+  filterPlanRowsByDateRange,
+  type DateRange,
+} from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { PlanRow } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
+function PlanActivityChartImpl({
+  planRows,
+  dateRange,
+}: {
+  planRows: PlanRow[];
+  dateRange: DateRange | null;
+}) {
   const displayCurrency = useAppStore((s) => s.displayCurrency);
   const money = useMemo(
     () => getCurrencyFormatter(displayCurrency, "chart"),
@@ -13,7 +23,8 @@ export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
   );
 
   const option = useMemo(() => {
-    const pts = aggregatePlanActivityByGroup(planRows);
+    const filtered = filterPlanRowsByDateRange(planRows, dateRange);
+    const pts = aggregatePlanActivityByGroup(filtered);
     const labels = pts.map((p) => p.label);
     const groupSet = new Set<string>();
     for (const p of pts) {
@@ -43,13 +54,7 @@ export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
     }));
 
     return {
-      title: {
-        text: "Plan activity by category group (stacked)",
-        subtext: "Sum of spending-side activity per month (max(0, −Activity))",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-        subtextStyle: { color: "#9aa5b1", fontSize: 12 },
-      },
+      title: { show: false },
       tooltip: {
         trigger: "axis",
         axisPointer: { type: "shadow" },
@@ -60,7 +65,7 @@ export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
         bottom: 0,
         textStyle: { color: "#b8c0cc" },
       },
-      grid: { left: 48, right: 24, top: 72, bottom: 120 },
+      grid: { left: 48, right: 24, top: 28, bottom: 120 },
       xAxis: {
         type: "category",
         data: labels,
@@ -76,18 +81,13 @@ export function PlanActivityChart({ planRows }: { planRows: PlanRow[] }) {
       },
       series,
     };
-  }, [planRows, money]);
+  }, [planRows, dateRange, money]);
 
   if (planRows.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts
-        option={option}
-        style={{ height: 420 }}
-        notMerge
-        lazyUpdate
-      />
-    </div>
+    <ReactECharts option={option} style={{ height: 420 }} notMerge lazyUpdate />
   );
 }
+
+export const PlanActivityChart = memo(PlanActivityChartImpl);

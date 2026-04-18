@@ -1,15 +1,15 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   aggregateMonthlyCashflow,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function MonthlyScatterChart({
+function MonthlyScatterChartImpl({
   transactions,
   dateRange,
 }: {
@@ -23,30 +23,27 @@ export function MonthlyScatterChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const pts = aggregateMonthlyCashflow(txs);
-    const maxNet = Math.max(
-      1,
-      ...pts.map((p) => Math.abs(p.net))
+    const maxNet = Math.max(1, ...pts.map((p) => Math.abs(p.net)));
+    const data = pts.map(
+      (p) => [p.inflow, p.outflow, p.net] as [number, number, number]
     );
-    const data = pts.map((p) => [p.inflow, p.outflow, p.net] as [number, number, number]);
 
     return {
-      title: {
-        text: "Months: inflow vs outflow",
-        subtext: "Bubble size ~ |net|",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-        subtextStyle: { color: "#9aa5b1", fontSize: 12 },
-      },
+      title: { show: false },
       tooltip: {
         formatter: (params: { dataIndex: number }) => {
           const p = pts[params.dataIndex];
           if (!p) return "";
-          return `${p.label}<br/>Inflow: ${money.format(p.inflow)}<br/>Outflow: ${money.format(p.outflow)}<br/>Net: ${money.format(p.net)}`;
+          return `${p.label}<br/>Inflow: ${money.format(
+            p.inflow
+          )}<br/>Outflow: ${money.format(p.outflow)}<br/>Net: ${money.format(
+            p.net
+          )}`;
         },
       },
-      grid: { left: 56, right: 24, top: 72, bottom: 48 },
+      grid: { left: 56, right: 24, top: 28, bottom: 48 },
       xAxis: {
         type: "value",
         name: "Inflow",
@@ -85,8 +82,8 @@ export function MonthlyScatterChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts option={option} style={{ height: 400 }} notMerge lazyUpdate />
-    </div>
+    <ReactECharts option={option} style={{ height: 400 }} notMerge lazyUpdate />
   );
 }
+
+export const MonthlyScatterChart = memo(MonthlyScatterChartImpl);

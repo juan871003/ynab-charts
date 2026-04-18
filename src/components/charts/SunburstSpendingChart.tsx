@@ -1,15 +1,15 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   buildSpendingTreemap,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import { getCurrencyFormatter } from "@/lib/money";
 import type { NormalizedTransaction } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-export function SunburstSpendingChart({
+function SunburstSpendingChartImpl({
   transactions,
   dateRange,
 }: {
@@ -23,15 +23,11 @@ export function SunburstSpendingChart({
   );
 
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const root = buildSpendingTreemap(txs);
     const data = root.children ?? [];
     return {
-      title: {
-        text: "Spending hierarchy (sunburst)",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: {
         formatter: (info: { name: string; value: number }) =>
           `${info.name}: ${money.format(info.value)}`,
@@ -42,7 +38,11 @@ export function SunburstSpendingChart({
           data,
           radius: [0, "90%"],
           label: { color: "#fff", fontSize: 10 },
-          itemStyle: { borderRadius: 4, borderWidth: 1, borderColor: "#0f1419" },
+          itemStyle: {
+            borderRadius: 4,
+            borderWidth: 1,
+            borderColor: "#0f1419",
+          },
         },
       ],
     };
@@ -51,8 +51,8 @@ export function SunburstSpendingChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts option={option} style={{ height: 420 }} notMerge lazyUpdate />
-    </div>
+    <ReactECharts option={option} style={{ height: 420 }} notMerge lazyUpdate />
   );
 }
+
+export const SunburstSpendingChart = memo(SunburstSpendingChartImpl);

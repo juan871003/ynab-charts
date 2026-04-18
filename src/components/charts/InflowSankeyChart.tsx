@@ -1,10 +1,10 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import { filterTransactions, type DateRange } from "@/lib/aggregate";
+import { filterRegisterForCharts, type DateRange } from "@/lib/aggregate";
 import { buildInflowSankey } from "@/lib/galleryAggregate";
 import type { NormalizedTransaction } from "@/lib/types";
 
-export function InflowSankeyChart({
+function InflowSankeyChartImpl({
   transactions,
   dateRange,
 }: {
@@ -12,14 +12,10 @@ export function InflowSankeyChart({
   dateRange: DateRange | null;
 }) {
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const { nodes, links } = buildInflowSankey(txs);
     return {
-      title: {
-        text: "Inflows → category groups (Sankey)",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: { trigger: "item" },
       series: [
         {
@@ -39,8 +35,8 @@ export function InflowSankeyChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts option={option} style={{ height: 400 }} notMerge lazyUpdate />
-    </div>
+    <ReactECharts option={option} style={{ height: 400 }} notMerge lazyUpdate />
   );
 }
+
+export const InflowSankeyChart = memo(InflowSankeyChartImpl);

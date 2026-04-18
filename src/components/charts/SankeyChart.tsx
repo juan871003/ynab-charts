@@ -1,13 +1,13 @@
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import {
   buildOutflowSankey,
-  filterTransactions,
+  filterRegisterForCharts,
   type DateRange,
 } from "@/lib/aggregate";
 import type { NormalizedTransaction } from "@/lib/types";
 
-export function SankeyChart({
+function SankeyChartImpl({
   transactions,
   dateRange,
 }: {
@@ -15,14 +15,10 @@ export function SankeyChart({
   dateRange: DateRange | null;
 }) {
   const option = useMemo(() => {
-    const txs = filterTransactions(transactions, dateRange);
+    const txs = filterRegisterForCharts(transactions, dateRange);
     const { nodes, links } = buildOutflowSankey(txs);
     return {
-      title: {
-        text: "Outflows → category groups (Sankey)",
-        left: "center",
-        textStyle: { color: "#e8eaed" },
-      },
+      title: { show: false },
       tooltip: { trigger: "item" },
       series: [
         {
@@ -42,13 +38,8 @@ export function SankeyChart({
   if (transactions.length === 0) return null;
 
   return (
-    <div style={{ marginTop: "1.5rem" }}>
-      <ReactECharts
-        option={option}
-        style={{ height: 400 }}
-        notMerge
-        lazyUpdate
-      />
-    </div>
+    <ReactECharts option={option} style={{ height: 400 }} notMerge lazyUpdate />
   );
 }
+
+export const SankeyChart = memo(SankeyChartImpl);
