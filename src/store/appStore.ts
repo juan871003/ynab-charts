@@ -12,6 +12,11 @@ import type {
 } from "@/lib/types";
 import type { ChartId } from "@/lib/chartIds";
 import type { DateRange } from "@/lib/aggregate";
+import {
+  buildChartDateRanges,
+  defaultDateRangeForChart,
+} from "@/lib/chartDateDefaults";
+import { defaultFullRangeThroughLastCompleteMonth } from "@/lib/defaultMonthRange";
 import { DEFAULT_DISPLAY_CURRENCY } from "@/lib/money";
 import {
   clearPersisted,
@@ -37,9 +42,10 @@ interface AppState {
   loadError: string | null;
   /** ISO 8601 — last successful manual parse (or restored session time). */
   lastLoadedAt: string | null;
-  dateRange: DateRange | null;
-  /** Per-chart date range; missing key means “use global `dateRange`”. */
-  chartDateOverrides: Partial<Record<ChartId, DateRange>>;
+  /** Each chart has its own range (no global filter). */
+  chartDateRanges: Record<ChartId, DateRange>;
+  /** Register table uses its own range; default = start → last completed month. */
+  transactionsDateRange: DateRange | null;
   selection: CategorySelection | null;
   /** ISO 4217 code for display formatting only. */
   displayCurrency: string;
@@ -48,23 +54,11 @@ interface AppState {
     planText: string,
     options?: SetFromFilesOptions
   ) => void;
-  setDateRange: (range: DateRange | null) => void;
   setChartDateRange: (chartId: ChartId, range: DateRange | null) => void;
+  setTransactionsDateRange: (range: DateRange | null) => void;
   setSelection: (s: CategorySelection | null) => void;
   setDisplayCurrency: (code: string) => void;
   reset: () => void;
-}
-
-function computeDefaultRange(txs: NormalizedTransaction[]): DateRange | null {
-  if (txs.length === 0) return null;
-  let min = txs[0].date.getTime();
-  let max = txs[0].date.getTime();
-  for (const t of txs) {
-    const x = t.date.getTime();
-    if (x < min) min = x;
-    if (x > max) max = x;
-  }
-  return { start: new Date(min), end: new Date(max) };
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -75,8 +69,8 @@ export const useAppStore = create<AppState>((set) => ({
   planRows: [],
   loadError: null,
   lastLoadedAt: null,
-  dateRange: null,
-  chartDateOverrides: {},
+  chartDateRanges: {} as Record<ChartId, DateRange>,
+  transactionsDateRange: null,
   selection: null,
   displayCurrency: DEFAULT_DISPLAY_CURRENCY,
 
@@ -89,7 +83,9 @@ export const useAppStore = create<AppState>((set) => ({
         const fmt = inferDateFormatFromSamples(dates);
         const transactions = parseRegisterCsv(registerText, fmt);
         const planRows = parsePlanCsv(planText);
-        const dateRange = computeDefaultRange(transactions);
+        const chartDateRanges = buildChartDateRanges(transactions);
+        const transactionsDateRange =
+          defaultFullRangeThroughLastCompleteMonth(transactions);
         if (persist) {
           const payload: PersistedPayload = {
             v: 1,
@@ -116,8 +112,8 @@ export const useAppStore = create<AppState>((set) => ({
           planRows,
           loadError: null,
           lastLoadedAt: loadedAt,
-          dateRange,
-          chartDateOverrides: {},
+          chartDateRanges,
+          transactionsDateRange,
           selection: null,
         };
       } catch (e) {
@@ -127,26 +123,37 @@ export const useAppStore = create<AppState>((set) => ({
     });
   },
 
-  setDateRange: (range) => set({ dateRange: range, chartDateOverrides: {} }),
-
   setChartDateRange: (chartId, range) =>
     set((state) => {
       const clearTreemapSelection =
         chartId === "treemap"
           ? { selection: null satisfies CategorySelection | null }
           : {};
-      if (range === null) {
-        const next = { ...state.chartDateOverrides };
-        delete next[chartId];
-        return { chartDateOverrides: next, ...clearTreemapSelection };
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        return { ...clearTreemapSelection };
+      }
+      const nextRange = range ?? defaultDateRangeForChart(chartId, txs);
+      if (!nextRange) {
+        return { ...clearTreemapSelection };
       }
       return {
-        chartDateOverrides: {
-          ...state.chartDateOverrides,
-          [chartId]: range,
+        chartDateRanges: {
+          ...state.chartDateRanges,
+          [chartId]: nextRange,
         },
         ...clearTreemapSelection,
       };
+    }),
+
+  setTransactionsDateRange: (range) =>
+    set((state) => {
+      const txs = state.transactions;
+      if (txs.length === 0) {
+        return { transactionsDateRange: null };
+      }
+      const next = range ?? defaultFullRangeThroughLastCompleteMonth(txs);
+      return { transactionsDateRange: next };
     }),
 
   setSelection: (s) => set({ selection: s }),
@@ -163,8 +170,8 @@ export const useAppStore = create<AppState>((set) => ({
       planRows: [],
       loadError: null,
       lastLoadedAt: null,
-      dateRange: null,
-      chartDateOverrides: {},
+      chartDateRanges: {} as Record<ChartId, DateRange>,
+      transactionsDateRange: null,
       selection: null,
     });
   },

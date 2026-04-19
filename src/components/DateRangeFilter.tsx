@@ -2,20 +2,19 @@ import { useAppStore } from "@/store/appStore";
 import type { ChartId } from "@/lib/chartIds";
 import type { DateRange } from "@/lib/aggregate";
 import { MonthRangePicker } from "@/components/filters/MonthRangePicker";
+import { defaultDateRangeForChart } from "@/lib/chartDateDefaults";
+import { defaultFullRangeThroughLastCompleteMonth } from "@/lib/defaultMonthRange";
 
-type Props = {
-  /** When set, edits only this chart’s range (global range is the default). */
-  chartId?: ChartId;
-};
+type Props = { chartId: ChartId } | { scope: "transactions" };
 
-export function DateRangeFilter({ chartId }: Props) {
+export function DateRangeFilter(props: Props) {
   const transactions = useAppStore((s) => s.transactions);
-  const globalRange = useAppStore((s) => s.dateRange);
-  const override = useAppStore((s) =>
-    chartId ? s.chartDateOverrides[chartId] : undefined
-  );
-  const setDateRange = useAppStore((s) => s.setDateRange);
+  const chartDateRanges = useAppStore((s) => s.chartDateRanges);
+  const transactionsDateRange = useAppStore((s) => s.transactionsDateRange);
   const setChartDateRange = useAppStore((s) => s.setChartDateRange);
+  const setTransactionsDateRange = useAppStore(
+    (s) => s.setTransactionsDateRange
+  );
 
   if (transactions.length === 0) return null;
 
@@ -30,20 +29,37 @@ export function DateRangeFilter({ chartId }: Props) {
     return { start: new Date(min), end: new Date(max) };
   })();
 
-  const effectiveGlobal = globalRange ?? bounds;
-  const current: DateRange = chartId
-    ? override ?? effectiveGlobal
-    : effectiveGlobal;
+  const current: DateRange = (() => {
+    if ("scope" in props && props.scope === "transactions") {
+      return (
+        transactionsDateRange ??
+        defaultFullRangeThroughLastCompleteMonth(transactions)!
+      );
+    }
+    if ("chartId" in props) {
+      const { chartId } = props;
+      const stored = chartDateRanges[chartId];
+      if (stored) return stored;
+      return defaultDateRangeForChart(chartId, transactions)!;
+    }
+    throw new Error("DateRangeFilter: expected chartId or transactions scope");
+  })();
 
   const apply = (next: DateRange) => {
-    if (chartId) {
-      setChartDateRange(chartId, next);
-    } else {
-      setDateRange(next);
+    if ("scope" in props && props.scope === "transactions") {
+      setTransactionsDateRange(next);
+    } else if ("chartId" in props) {
+      setChartDateRange(props.chartId, next);
     }
   };
 
-  const isPerChart = Boolean(chartId);
+  const resetToDefault = () => {
+    if ("scope" in props && props.scope === "transactions") {
+      setTransactionsDateRange(null);
+    } else if ("chartId" in props) {
+      setChartDateRange(props.chartId, null);
+    }
+  };
 
   return (
     <MonthRangePicker
@@ -51,15 +67,13 @@ export function DateRangeFilter({ chartId }: Props) {
       bounds={bounds}
       onApply={apply}
       extraActions={
-        isPerChart ? (
-          <button
-            type="button"
-            className="ynab-btn ynab-btn--ghost"
-            onClick={() => chartId && setChartDateRange(chartId, null)}
-          >
-            Use global range
-          </button>
-        ) : null
+        <button
+          type="button"
+          className="ynab-btn ynab-btn--ghost"
+          onClick={resetToDefault}
+        >
+          Reset to default
+        </button>
       }
     />
   );

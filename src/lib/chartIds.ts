@@ -1,4 +1,4 @@
-/** Stable ids for per-chart date overrides and panel wiring. */
+/** Stable ids for per-chart date ranges and panel wiring. */
 export const CHART_IDS = [
   "cashflow",
   "treemap",

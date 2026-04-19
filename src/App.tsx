@@ -23,7 +23,7 @@ export default function App() {
   }, []);
 
   const transactions = useAppStore((s) => s.transactions);
-  const dateRange = useAppStore((s) => s.dateRange);
+  const transactionsDateRange = useAppStore((s) => s.transactionsDateRange);
   const selection = useAppStore((s) => s.selection);
   const dateFormat = useAppStore((s) => s.dateFormat);
   const setSelection = useAppStore((s) => s.setSelection);
@@ -33,9 +33,9 @@ export default function App() {
   const visible = useMemo(
     () =>
       showTransactionsTable
-        ? getVisibleTransactions(transactions, dateRange, selection)
+        ? getVisibleTransactions(transactions, transactionsDateRange, selection)
         : [],
-    [transactions, dateRange, selection, showTransactionsTable]
+    [transactions, transactionsDateRange, selection, showTransactionsTable]
   );
 
   const hasData = transactions.length > 0;
@@ -95,10 +95,6 @@ export default function App() {
             </p>
           ) : null}
 
-          <FiltersPanel variant="global">
-            <DateRangeFilter />
-          </FiltersPanel>
-
           {selection ? (
             <div
               style={{
@@ -136,6 +132,7 @@ export default function App() {
                 <div
                   style={{
                     display: "flex",
+                    flexWrap: "wrap",
                     alignItems: "center",
                     gap: "0.75rem",
                     marginBottom: "0.75rem",
@@ -149,6 +146,9 @@ export default function App() {
                     Hide transactions
                   </button>
                 </div>
+                <FiltersPanel variant="chart">
+                  <DateRangeFilter scope="transactions" />
+                </FiltersPanel>
                 <TransactionsTable rows={visible} />
               </>
             ) : (

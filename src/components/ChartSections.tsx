@@ -18,6 +18,7 @@ import { RadarCompareChart } from "@/components/charts/RadarCompareChart";
 import { NetWaterfallChart } from "@/components/charts/NetWaterfallChart";
 import { SunburstSpendingChart } from "@/components/charts/SunburstSpendingChart";
 import { InflowSankeyChart } from "@/components/charts/InflowSankeyChart";
+import { defaultDateRangeForChart } from "@/lib/chartDateDefaults";
 
 function GroupHeading({ children }: { children: string }) {
   return (
@@ -45,9 +46,12 @@ function makeRegisterSection(
   }>
 ) {
   return memo(function RegisterSection() {
-    const dateRange = useAppStore(
-      (s) => s.chartDateOverrides[chartId] ?? s.dateRange
-    );
+    const dateRange = useAppStore((s) => {
+      const r = s.chartDateRanges[chartId];
+      if (r) return r;
+      if (s.transactions.length === 0) return null;
+      return defaultDateRangeForChart(chartId, s.transactions);
+    });
     const transactions = useAppStore((s) => s.transactions);
     return (
       <ChartPanel title={title} description={description} chartId={chartId}>
@@ -66,7 +70,7 @@ const CashflowSection = makeRegisterSection(
 const TreemapSection = makeRegisterSection(
   "treemap",
   "Spending by category (treemap)",
-  "Sums outflows in the selected month range (same date filter as other charts).",
+  "Sums outflows in the selected month range.",
   TreemapChart
 );
 const SankeySection = makeRegisterSection(
@@ -137,9 +141,12 @@ const InflowSankeySection = makeRegisterSection(
 );
 
 const PlanActivitySection = memo(function PlanActivitySection() {
-  const dateRange = useAppStore(
-    (s) => s.chartDateOverrides.planActivity ?? s.dateRange
-  );
+  const dateRange = useAppStore((s) => {
+    const r = s.chartDateRanges.planActivity;
+    if (r) return r;
+    if (s.transactions.length === 0) return null;
+    return defaultDateRangeForChart("planActivity", s.transactions);
+  });
   const planRows = useAppStore((s) => s.planRows);
   return (
     <ChartPanel
