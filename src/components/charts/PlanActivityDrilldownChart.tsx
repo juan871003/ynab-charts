@@ -2,7 +2,7 @@ import { memo, useMemo, useRef, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import type { EChartsInstance } from "echarts-for-react";
 import {
-  aggregatePlanActivityByGroup,
+  aggregatePlanActivityByCategoryInGroup,
   filterPlanRowsByDateRange,
   type DateRange,
 } from "@/lib/aggregate";
@@ -11,12 +11,14 @@ import { getCurrencyFormatter } from "@/lib/money";
 import type { PlanRow } from "@/lib/types";
 import { useAppStore } from "@/store/appStore";
 
-function PlanActivityChartImpl({
+function PlanActivityDrilldownChartImpl({
   planRows,
   dateRange,
+  categoryGroup,
 }: {
   planRows: PlanRow[];
   dateRange: DateRange | null;
+  categoryGroup: string;
 }) {
   const setSelection = useAppStore((s) => s.setSelection);
   const displayCurrency = useAppStore((s) => s.displayCurrency);
@@ -32,19 +34,25 @@ function PlanActivityChartImpl({
 
   const option = useMemo(() => {
     const filtered = filterPlanRowsByDateRange(planRows, dateRange);
-    const pts = aggregatePlanActivityByGroup(filtered);
-    const groupSet = new Set<string>();
+    const pts = aggregatePlanActivityByCategoryInGroup(
+      filtered,
+      categoryGroup
+    );
+    const catSet = new Set<string>();
     for (const p of pts) {
-      for (const g of Object.keys(p.byGroup)) groupSet.add(g);
+      for (const c of Object.keys(p.byGroup)) catSet.add(c);
     }
-    const groups = [...groupSet].sort((a, b) => a.localeCompare(b));
+    const categories = [...catSet].sort((a, b) => a.localeCompare(b));
+    if (categories.length === 0) {
+      return null;
+    }
     return buildPlanActivityStackChartOption({
       pts,
-      stackKeys: groups,
+      stackKeys: categories,
       money,
       hoveredSeriesName,
     });
-  }, [planRows, dateRange, money, hoveredSeriesName]);
+  }, [planRows, dateRange, money, categoryGroup, hoveredSeriesName]);
 
   const onEvents = useMemo(
     () => ({
@@ -68,19 +76,22 @@ function PlanActivityChartImpl({
       },
       click: (params: { componentType: string; seriesName?: string }) => {
         if (params.componentType !== "series" || !params.seriesName) return;
-        setSelection({ categoryGroup: params.seriesName });
+        setSelection({
+          categoryGroup,
+          category: params.seriesName,
+        });
       },
     }),
-    [setSelection]
+    [setSelection, categoryGroup]
   );
 
-  if (planRows.length === 0 || !option) return null;
+  if (!option) return null;
 
   return (
     <>
       <ReactECharts
         option={option}
-        style={{ height: 420 }}
+        style={{ height: 400 }}
         notMerge
         lazyUpdate
         onChartReady={(ec) => {
@@ -95,12 +106,11 @@ function PlanActivityChartImpl({
           marginTop: 8,
         }}
       >
-        Hover a color to focus that category group (legend matches). Click a
-        stack segment to filter the register table and show plan activity by
-        category below.
+        Plan activity for &quot;{categoryGroup}&quot; split by category. Click a
+        segment to narrow the register table to that category.
       </p>
     </>
   );
 }
 
-export const PlanActivityChart = memo(PlanActivityChartImpl);
+export const PlanActivityDrilldownChart = memo(PlanActivityDrilldownChartImpl);

@@ -5,6 +5,7 @@ import { parsePlanCsv } from "./plan";
 import { REGISTER_FIXTURE, PLAN_FIXTURE } from "@/__fixtures__/sampleCsv";
 import {
   aggregateMonthlyCashflow,
+  aggregatePlanActivityByCategoryInGroup,
   aggregatePlanActivityByGroup,
   buildSpendingTreemap,
   excludeUncategorizedAccountTransfers,
@@ -41,6 +42,13 @@ describe("aggregations", () => {
     const pts = aggregatePlanActivityByGroup(rows);
     const jan = pts.find((p) => p.monthKey === "2024-01");
     expect(jan?.byGroup.Food).toBeCloseTo(62, 5);
+  });
+
+  it("plan activity by category within a group splits by category name", () => {
+    const rows = parsePlanCsv(PLAN_FIXTURE);
+    const pts = aggregatePlanActivityByCategoryInGroup(rows, "Food");
+    const jan = pts.find((p) => p.monthKey === "2024-01");
+    expect(jan?.byGroup.Groceries).toBeCloseTo(62, 5);
   });
 
   it("flags uncategorized Transfer : payees as internal account moves", () => {

@@ -200,6 +200,40 @@ export function aggregatePlanActivityByGroup(
   });
 }
 
+/**
+ * Same shape as {@link aggregatePlanActivityByGroup}, but keys in `byGroup` are
+ * **category** names for rows in the given category group only.
+ */
+export function aggregatePlanActivityByCategoryInGroup(
+  rows: PlanRow[],
+  categoryGroup: string
+): PlanStackPoint[] {
+  const target = categoryGroup.trim();
+  const map = new Map<string, Record<string, number>>();
+
+  for (const r of rows) {
+    const g = r.categoryGroup.trim() || "(Uncategorized)";
+    if (g !== target) continue;
+    const key = format(r.monthDate, "yyyy-MM");
+    const cat = r.category.trim() || "(Uncategorized)";
+    const spend = Math.max(0, -r.activity);
+    if (!map.has(key)) map.set(key, {});
+    const rec = map.get(key)!;
+    rec[cat] = (rec[cat] ?? 0) + spend;
+  }
+
+  const keys = [...map.keys()].sort();
+  return keys.map((monthKey) => {
+    const [y, m] = monthKey.split("-").map(Number);
+    const label = format(new Date(y, m - 1, 1), "MMM yyyy");
+    return {
+      monthKey,
+      label,
+      byGroup: map.get(monthKey) ?? {},
+    };
+  });
+}
+
 /** Daily total outflow for calendar heatmap. */
 export function aggregateDailyOutflow(
   txs: NormalizedTransaction[]

@@ -7,6 +7,7 @@ import type { NormalizedTransaction } from "@/lib/types";
 import { CashflowChart } from "@/components/charts/CashflowChart";
 import { TreemapChart } from "@/components/charts/TreemapChart";
 import { PlanActivityChart } from "@/components/charts/PlanActivityChart";
+import { PlanActivityDrilldownChart } from "@/components/charts/PlanActivityDrilldownChart";
 import { SankeyChart } from "@/components/charts/SankeyChart";
 import { CalendarHeatmapChart } from "@/components/charts/CalendarHeatmapChart";
 import { DayOfWeekChart } from "@/components/charts/DayOfWeekChart";
@@ -148,6 +149,7 @@ const PlanActivitySection = memo(function PlanActivitySection() {
     return defaultDateRangeForChart("planActivity", s.transactions);
   });
   const planRows = useAppStore((s) => s.planRows);
+  const drilldownGroup = useAppStore((s) => s.selection?.categoryGroup);
   return (
     <ChartPanel
       title="Plan activity by category group (stacked)"
@@ -155,6 +157,26 @@ const PlanActivitySection = memo(function PlanActivitySection() {
       chartId="planActivity"
     >
       <PlanActivityChart planRows={planRows} dateRange={dateRange} />
+      {drilldownGroup ? (
+        <>
+          <h3
+            style={{
+              margin: "1.25rem 0 0.5rem",
+              fontSize: "1rem",
+              fontWeight: 600,
+              color: "var(--ynab-text-muted)",
+            }}
+          >
+            Plan activity in &quot;{drilldownGroup}&quot; by category
+          </h3>
+          <PlanActivityDrilldownChart
+            key={drilldownGroup}
+            planRows={planRows}
+            dateRange={dateRange}
+            categoryGroup={drilldownGroup}
+          />
+        </>
+      ) : null}
     </ChartPanel>
   );
 });
