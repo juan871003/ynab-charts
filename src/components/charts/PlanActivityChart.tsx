@@ -1,5 +1,6 @@
-import { memo, useMemo } from "react";
+import { memo, useMemo, useRef } from "react";
 import ReactECharts from "echarts-for-react";
+import type { EChartsInstance } from "echarts-for-react";
 import {
   aggregatePlanActivityByGroup,
   filterPlanRowsByDateRange,
@@ -23,6 +24,8 @@ function PlanActivityChartImpl({
     [displayCurrency]
   );
 
+  const chartRef = useRef<EChartsInstance | null>(null);
+
   const option = useMemo(() => {
     const filtered = filterPlanRowsByDateRange(planRows, dateRange);
     const pts = aggregatePlanActivityByGroup(filtered);
@@ -37,7 +40,6 @@ function PlanActivityChartImpl({
       name: g,
       type: "bar" as const,
       stack: "act",
-      emphasis: { focus: "series" as const },
       data: pts.map((p) => p.byGroup[g] ?? 0),
       itemStyle: { color: chartPalette[i % chartPalette.length] },
     }));
@@ -75,10 +77,42 @@ function PlanActivityChartImpl({
     };
   }, [planRows, dateRange, money]);
 
+  const onEvents = useMemo(
+    () => ({
+      mouseover: (params: {
+        componentType: string;
+        seriesName?: string;
+      }) => {
+        if (params.componentType !== "series" || !params.seriesName) return;
+        const ec = chartRef.current;
+        if (!ec) return;
+        ec.dispatchAction({ type: "downplay" });
+        ec.dispatchAction({
+          type: "highlight",
+          seriesName: params.seriesName,
+          notBlur: true,
+        });
+      },
+      globalout: () => {
+        chartRef.current?.dispatchAction({ type: "downplay" });
+      },
+    }),
+    []
+  );
+
   if (planRows.length === 0) return null;
 
   return (
-    <ReactECharts option={option} style={{ height: 420 }} notMerge lazyUpdate />
+    <ReactECharts
+      option={option}
+      style={{ height: 420 }}
+      notMerge
+      lazyUpdate
+      onChartReady={(ec) => {
+        chartRef.current = ec;
+      }}
+      onEvents={onEvents}
+    />
   );
 }
 
