@@ -47,6 +47,12 @@ interface AppState {
   /** Register table uses its own range; default = start → last completed month. */
   transactionsDateRange: DateRange | null;
   selection: CategorySelection | null;
+  /**
+   * When set, the plan activity panel shows the subcategory stacked chart for
+   * this group (opened from the overview chart only). Independent of treemap /
+   * other uses of `selection`.
+   */
+  planActivityDrillGroup: string | null;
   /** ISO 4217 code for display formatting only. */
   displayCurrency: string;
   setFromFiles: (
@@ -57,6 +63,7 @@ interface AppState {
   setChartDateRange: (chartId: ChartId, range: DateRange | null) => void;
   setTransactionsDateRange: (range: DateRange | null) => void;
   setSelection: (s: CategorySelection | null) => void;
+  openPlanActivityDrill: (categoryGroup: string) => void;
   setDisplayCurrency: (code: string) => void;
   reset: () => void;
 }
@@ -72,6 +79,7 @@ export const useAppStore = create<AppState>((set) => ({
   chartDateRanges: {} as Record<ChartId, DateRange>,
   transactionsDateRange: null,
   selection: null,
+  planActivityDrillGroup: null,
   displayCurrency: DEFAULT_DISPLAY_CURRENCY,
 
   setFromFiles: (registerText, planText, options) => {
@@ -115,6 +123,7 @@ export const useAppStore = create<AppState>((set) => ({
           chartDateRanges,
           transactionsDateRange,
           selection: null,
+          planActivityDrillGroup: null,
         };
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to parse CSV";
@@ -127,7 +136,10 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => {
       const clearTreemapSelection =
         chartId === "treemap"
-          ? { selection: null satisfies CategorySelection | null }
+          ? {
+              selection: null satisfies CategorySelection | null,
+              planActivityDrillGroup: null,
+            }
           : {};
       const txs = state.transactions;
       if (txs.length === 0) {
@@ -156,7 +168,28 @@ export const useAppStore = create<AppState>((set) => ({
       return { transactionsDateRange: next };
     }),
 
-  setSelection: (s) => set({ selection: s }),
+  setSelection: (s) =>
+    set((state) => {
+      if (s === null) {
+        return { selection: null, planActivityDrillGroup: null };
+      }
+      const drill = state.planActivityDrillGroup;
+      const refinesDrill =
+        drill !== null &&
+        s.categoryGroup === drill &&
+        typeof s.category === "string" &&
+        s.category.trim() !== "";
+      if (refinesDrill) {
+        return { selection: s, planActivityDrillGroup: drill };
+      }
+      return { selection: s, planActivityDrillGroup: null };
+    }),
+
+  openPlanActivityDrill: (categoryGroup) =>
+    set({
+      planActivityDrillGroup: categoryGroup,
+      selection: { categoryGroup },
+    }),
 
   setDisplayCurrency: (code) => set({ displayCurrency: code }),
 
@@ -173,6 +206,7 @@ export const useAppStore = create<AppState>((set) => ({
       chartDateRanges: {} as Record<ChartId, DateRange>,
       transactionsDateRange: null,
       selection: null,
+      planActivityDrillGroup: null,
     });
   },
 }));

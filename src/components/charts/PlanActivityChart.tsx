@@ -18,7 +18,7 @@ function PlanActivityChartImpl({
   planRows: PlanRow[];
   dateRange: DateRange | null;
 }) {
-  const setSelection = useAppStore((s) => s.setSelection);
+  const openPlanActivityDrill = useAppStore((s) => s.openPlanActivityDrill);
   const displayCurrency = useAppStore((s) => s.displayCurrency);
   const money = useMemo(
     () => getCurrencyFormatter(displayCurrency, "chart"),
@@ -48,10 +48,7 @@ function PlanActivityChartImpl({
 
   const onEvents = useMemo(
     () => ({
-      mouseover: (params: {
-        componentType: string;
-        seriesName?: string;
-      }) => {
+      mouseover: (params: { componentType: string; seriesName?: string }) => {
         if (params.componentType !== "series" || !params.seriesName) return;
         setHoveredSeriesName(params.seriesName);
         const ec = chartRef.current;
@@ -68,10 +65,10 @@ function PlanActivityChartImpl({
       },
       click: (params: { componentType: string; seriesName?: string }) => {
         if (params.componentType !== "series" || !params.seriesName) return;
-        setSelection({ categoryGroup: params.seriesName });
+        openPlanActivityDrill(params.seriesName);
       },
     }),
-    [setSelection]
+    [openPlanActivityDrill]
   );
 
   if (planRows.length === 0 || !option) return null;
@@ -96,8 +93,8 @@ function PlanActivityChartImpl({
         }}
       >
         Hover a color to focus that category group (legend matches). Click a
-        stack segment to filter the register table and show plan activity by
-        category below.
+        stack segment to open subcategories for that group (replaces this chart)
+        and filter the register table to that group.
       </p>
     </>
   );

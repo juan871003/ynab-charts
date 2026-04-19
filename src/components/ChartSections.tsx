@@ -149,26 +149,35 @@ const PlanActivitySection = memo(function PlanActivitySection() {
     return defaultDateRangeForChart("planActivity", s.transactions);
   });
   const planRows = useAppStore((s) => s.planRows);
-  const drilldownGroup = useAppStore((s) => s.selection?.categoryGroup);
+  const drilldownGroup = useAppStore((s) => s.planActivityDrillGroup);
+  const setSelection = useAppStore((s) => s.setSelection);
   return (
     <ChartPanel
-      title="Plan activity by category group (stacked)"
-      description="Sum of spending-side activity per month (max(0, −Activity))."
+      title={
+        drilldownGroup
+          ? `Plan activity in “${drilldownGroup}” (by category)`
+          : "Plan activity by category group (stacked)"
+      }
+      description={
+        drilldownGroup
+          ? "Subcategories in this group. Same metric: sum of spending-side activity per month (max(0, −Activity))."
+          : "Sum of spending-side activity per month (max(0, −Activity))."
+      }
       chartId="planActivity"
     >
-      <PlanActivityChart planRows={planRows} dateRange={dateRange} />
-      {drilldownGroup ? (
+      {!drilldownGroup ? (
+        <PlanActivityChart planRows={planRows} dateRange={dateRange} />
+      ) : (
         <>
-          <h3
-            style={{
-              margin: "1.25rem 0 0.5rem",
-              fontSize: "1rem",
-              fontWeight: 600,
-              color: "var(--ynab-text-muted)",
-            }}
-          >
-            Plan activity in &quot;{drilldownGroup}&quot; by category
-          </h3>
+          <div style={{ marginBottom: "0.75rem" }}>
+            <button
+              type="button"
+              className="ynab-btn ynab-btn--secondary ynab-btn--sm"
+              onClick={() => setSelection(null)}
+            >
+              ← All category groups
+            </button>
+          </div>
           <PlanActivityDrilldownChart
             key={drilldownGroup}
             planRows={planRows}
@@ -176,7 +185,7 @@ const PlanActivitySection = memo(function PlanActivitySection() {
             categoryGroup={drilldownGroup}
           />
         </>
-      ) : null}
+      )}
     </ChartPanel>
   );
 });

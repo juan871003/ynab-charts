@@ -34,10 +34,7 @@ function PlanActivityDrilldownChartImpl({
 
   const option = useMemo(() => {
     const filtered = filterPlanRowsByDateRange(planRows, dateRange);
-    const pts = aggregatePlanActivityByCategoryInGroup(
-      filtered,
-      categoryGroup
-    );
+    const pts = aggregatePlanActivityByCategoryInGroup(filtered, categoryGroup);
     const catSet = new Set<string>();
     for (const p of pts) {
       for (const c of Object.keys(p.byGroup)) catSet.add(c);
@@ -56,10 +53,7 @@ function PlanActivityDrilldownChartImpl({
 
   const onEvents = useMemo(
     () => ({
-      mouseover: (params: {
-        componentType: string;
-        seriesName?: string;
-      }) => {
+      mouseover: (params: { componentType: string; seriesName?: string }) => {
         if (params.componentType !== "series" || !params.seriesName) return;
         setHoveredSeriesName(params.seriesName);
         const ec = chartRef.current;
@@ -91,7 +85,7 @@ function PlanActivityDrilldownChartImpl({
     <>
       <ReactECharts
         option={option}
-        style={{ height: 400 }}
+        style={{ height: 420 }}
         notMerge
         lazyUpdate
         onChartReady={(ec) => {
