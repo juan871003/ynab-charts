@@ -153,7 +153,7 @@ const PlanActivitySection = memo(function PlanActivitySection() {
   const setSelection = useAppStore((s) => s.setSelection);
   return (
     <ChartPanel
-      title={
+      title={ 
         drilldownGroup
           ? `Plan activity in “${drilldownGroup}” (by category)`
           : "Plan activity by category group (stacked)"

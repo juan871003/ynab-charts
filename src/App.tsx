@@ -26,7 +26,6 @@ export default function App() {
   const transactionsDateRange = useAppStore((s) => s.transactionsDateRange);
   const selection = useAppStore((s) => s.selection);
   const dateFormat = useAppStore((s) => s.dateFormat);
-  const setSelection = useAppStore((s) => s.setSelection);
 
   const [showTransactionsTable, setShowTransactionsTable] = useState(false);
 
@@ -93,34 +92,6 @@ export default function App() {
               Inferred register date format:{" "}
               <code style={{ color: "var(--ynab-code)" }}>{dateFormat}</code>
             </p>
-          ) : null}
-
-          {selection ? (
-            <div
-              style={{
-                marginTop: "0.75rem",
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-              }}
-            >
-              <span
-                style={{ color: "var(--ynab-text-muted)", fontSize: "0.9rem" }}
-              >
-                Filter:{" "}
-                <strong>
-                  {selection.categoryGroup}
-                  {selection.category ? ` → ${selection.category}` : ""}
-                </strong>
-              </span>
-              <button
-                type="button"
-                className="ynab-btn ynab-btn--secondary ynab-btn--sm"
-                onClick={() => setSelection(null)}
-              >
-                Clear category filter
-              </button>
-            </div>
           ) : null}
 
           <OverviewChartBlocks />
